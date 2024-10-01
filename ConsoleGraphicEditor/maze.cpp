@@ -1,5 +1,6 @@
 #include <windows.h> 
 #include <iostream>
+#include <unordered_set>
 
 using namespace std;
 
@@ -11,6 +12,13 @@ private:
 	const COORD startLeftPoint;
 	const string  symbol = "\xB1\xB1";
 	const WORD defaultColour = BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
+	bool IsCoordInBounds(const COORD& inCoord) const
+	{
+		return (inCoord.X > startLeftPoint.X &&
+				inCoord.X < startLeftPoint.X + width &&
+				inCoord.Y > startLeftPoint.Y &&
+				inCoord.Y < startLeftPoint.Y + height);
+	}
 
 public:
 
@@ -25,7 +33,7 @@ public:
 	{
 
 	}
-	void Print(HANDLE hout) const
+	void PrintMaze(HANDLE hout) const
 	{
 		SetConsoleTextAttribute(hout, defaultColour);
 		SetConsoleCursorPosition(hout, startLeftPoint);
@@ -48,7 +56,24 @@ public:
 			cout << symbol;
 			curCoord.X -= width; 
 		}
+	}
+	bool IsFigurePrintable(COORD startPos, unordered_set<COORD> figereSetCoords) const
+	{
+		// if more than two dots(and startPos) are printable -> the figure is printable 
+		if (!(IsCoordInBounds(startPos)))
+		{
+			return false;
+		}
 
+		size_t counter = 0;
+		for (auto& coord : figereSetCoords)
+		{
+			if (IsCoordInBounds(coord))
+			{
+				counter++;
+			}
+		}
+		return counter > 2;  			
 	}
 
 };

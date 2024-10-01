@@ -26,11 +26,11 @@ int main()
 	
 	SetConsoleTextAttribute(hout, yellowFontBlackText);
 	system("cls");
-	COORD start;
-	start.X = 10;
-	start.Y = 1;
-	auto maze = new Maze(80, 20, start);
-	maze->Print(hout);
+	COORD startPos;
+	startPos.X = 10;
+	startPos.Y = 1;
+	auto maze = new Maze(80, 20, startPos);
+	//maze->Print(hout);
 	delete maze;
 	return 0;
 
