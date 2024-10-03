@@ -15,9 +15,9 @@ private:
 	const WORD defaultColour = BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
 	bool IsCoordInBounds(const COORD& inCoord) const
 	{
-		return (inCoord.X > startLeftPoint.X &&
-				inCoord.X < startLeftPoint.X + width &&
-				inCoord.Y > startLeftPoint.Y &&
+		return (inCoord.X >= startLeftPoint.X + 2 &&
+				inCoord.X <= startLeftPoint.X + width - 2 &&
+				inCoord.Y > startLeftPoint.Y + 1 &&
 				inCoord.Y < startLeftPoint.Y + height);
 	}
 
@@ -36,7 +36,7 @@ public:
 
 		for (;curCOORD.Y < startLeftPoint.Y + height; curCOORD.Y ++)
 		{
-			for (curCOORD.X = startLeftPoint.X + 2; curCOORD.X < startLeftPoint.X + width - 2; curCOORD.X++)
+			for (curCOORD.X = startLeftPoint.X + 2; curCOORD.X <= startLeftPoint.X + width - 2; curCOORD.X++)
 			{
 				SetConsoleCursorPosition(hout, curCOORD);
 				cout << " ";
