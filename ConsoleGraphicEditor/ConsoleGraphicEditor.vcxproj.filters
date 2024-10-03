@@ -29,5 +29,8 @@
     <ClInclude Include="colours.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="COORD_logic.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
