@@ -1,25 +1,11 @@
 #include <deque>
 #include <windows.h>
-#include <memory>
 #include <unordered_set>
+#include <unordered_map>
 #include <iostream>
+#include "COORD_logic.h" 
 
 using namespace std;
-
-struct COORDHash
-{
-	size_t operator()(const COORD& coord) const
-	{
-		return std::hash<SHORT>()(coord.X) ^ (std::hash<SHORT>()(coord.Y) << 1);
-	}
-};
-struct COORDEqual
-{
-	bool operator()(const COORD& coord1, const COORD& coord2) const
-	{
-		return coord1.X == coord2.X && coord1.Y == coord2.Y;
-	}
-};
 
 class Figure abstract
 {
@@ -30,15 +16,40 @@ public:
 		id++;
 		this->startPos = startPos;
 		this->colour = colour;
+		idToFigurePtrMap[id] = this;
 	}
 	virtual ~Figure() = default;
 	
-	
-	static deque <unordered_set<COORD, COORDHash, COORDEqual>> GetAllFiguresCoordsInDrawOrder() 
+	int SelectFigById(const size_t& id)
 	{
-		return figuresDrawDeque;
+		if (!idToFigurePtrMap.contains(id))
+		{
+			return -1;
+		}
+		Figure* selectedFigPtr = idToFigurePtrMap[id];
+		unordered_set<COORD, COORDHash, COORDEqual> selectedFigCoordSet = selectedFigPtr->GetThisFigCoordsSet();
+
+		for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
+		{
+			auto& curCoordSet = figDrawOrderDeque[index];
+
+			if (AreSetsEqual(selectedFigCoordSet, curCoordSet))
+			{
+				figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
+				figDrawOrderDeque.push_back(curCoordSet);
+				return 0;
+			}
+		}
+		
+		return -1;
 	}
-	unordered_set<COORD, COORDHash, COORDEqual> GetThisCoords(const HANDLE& hout) const 
+	
+	static deque <unordered_set<COORD, COORDHash, COORDEqual>> GetAllFigsCoordsInDrawOrder() 
+	{
+		return figDrawOrderDeque;
+	}
+	
+	unordered_set<COORD, COORDHash, COORDEqual> GetThisFigCoordsSet() const 
 	{
 		return this->figureCoordSet;
 	}
@@ -47,9 +58,26 @@ protected:
 	COORD startPos;
 	char symbolToDraw = '*';
 	static inline size_t id = 0;
-	inline static deque <unordered_set<COORD, COORDHash, COORDEqual>> figuresDrawDeque;
+	inline static deque <unordered_set<COORD, COORDHash, COORDEqual>> figDrawOrderDeque;
 	WORD colour; 
 	unordered_set<COORD, COORDHash, COORDEqual> figureCoordSet;
+	inline static unordered_map<size_t, Figure*> idToFigurePtrMap;
+
+	bool AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual>& inSet1, const unordered_set<COORD, COORDHash, COORDEqual>& inSet2)
+	{
+		if (inSet1.size() != inSet2.size())
+		{
+			return false;
+		}
+		for (auto& coord : inSet1)
+		{
+			if (!(inSet2.contains(coord)))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 
 };
 class Rectangle : public Figure
@@ -74,9 +102,8 @@ public:
 			figureCoordSet.insert(curCoord);
 			curCoord.X -= width;
 		}
-		//  here check if it is possible to draw 
 
-		figuresDrawDeque.push_back(figureCoordSet);  // push new coordinates to the back
+		figDrawOrderDeque.push_back(figureCoordSet);  // push new coordinates to the back
 	}
 	
 	virtual ~Rectangle() = default;
@@ -132,8 +159,8 @@ public:
 			
 			this->figureCoordSet.insert(curCoord);
 		}
-		//  here check if it is possible to draw 
-		figuresDrawDeque.push_back(figureCoordSet);
+		
+		figDrawOrderDeque.push_back(figureCoordSet);
 	}
 
 private:
