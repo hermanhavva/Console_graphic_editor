@@ -74,11 +74,15 @@ bool Figure::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual>& in
 		return true;
 	}
 
-Rectangle2::Rectangle2(const COORD& startPos, const size_t& width, const size_t& height, const WORD& colour)
+Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour)
 :	width(width*2),
 	height(height),
 	Figure(startPos, colour) 
 {
+	if (this->width < 0 || this->height < 0)
+	{
+		throw invalid_argument("Base and Width must be at least 0.");
+	}
 	for (COORD curCoord = startPos; curCoord.X <= startPos.X + this->width; curCoord.X++)  // horizontal
 	{
 		figureCoordSet.insert(curCoord);
@@ -105,7 +109,7 @@ string Rectangle2::GetFigProperties()
 
 
 Square::Square(const COORD& startPos, 
-			   const size_t& side,
+			   const short& side,
 			   const WORD& colour)
 :	Rectangle2(startPos, side, side, colour)
 {
@@ -119,38 +123,41 @@ string Square::GetFigProperties()
 
 
 Triangle::Triangle(const COORD& startPos,
-				   const size_t& base,  
+				   const short& base,  
 				   const WORD& colour)
-		: base(base),
+		: base(base + TRIANGLE_MIN_BASE),
 		Figure(startPos, colour)  // here calling base class constructor
 	{
-		if (base < 5)
+		if (this->base < TRIANGLE_MIN_BASE)
 		{
-			throw std::invalid_argument("Base must be at least 5.");
+			throw invalid_argument("Base must be at least 0.");
 		}
-		else if (base % 2 == 0)
+		else if (this->base % 2 != 0)  // Base must not be odd
 		{
 			this->base++; 
 		}
 		this->figureCoordSet.insert(startPos);
 	
-		COORD curCoord = startPos;
-		
-		for (size_t index = 1; index <= base; index++)
-		{
-			curCoord.X ++;
-			this->figureCoordSet.insert(curCoord);
+		COORD baseCOORD = startPos;
+		COORD tempCOORD = startPos;
 
-			if (index < (double)base / 2 + 1)
+		for (size_t index = 1; index <= this->base; index++)
+		{
+			baseCOORD.X++;
+			this->figureCoordSet.insert(baseCOORD);
+			
+			tempCOORD.X = baseCOORD.X;
+			
+			if (index < (double)this->base / 2 + 1)
 			{
-				curCoord.Y--;
+				tempCOORD.Y--;
 			}
 			else
 			{
-				curCoord.Y++;
+				tempCOORD.Y++;
 			}
 			
-			this->figureCoordSet.insert(curCoord);
+			this->figureCoordSet.insert(tempCOORD);
 		}
 		
 		figDrawOrderDeque.push_back(this);
@@ -164,38 +171,56 @@ string Triangle::GetFigProperties()
 	
 
 
-Circle::Circle(const COORD & startPos, const size_t & radius, const WORD & colour)
+Circle::Circle(const COORD & startPos, 
+			   const short& radius, 
+			   const WORD & colour)
 	:	radius(radius), 
 		Figure(startPos, colour)
 {
+	if (radius < 0)
+	{
+		throw invalid_argument("Radius must be at least 0.");
+	}
 	const size_t verticalRadius = radius;
-	const size_t horizontalRadius = radius * 2;
+	const size_t horzontalRadius = radius * 2;
 	
 	this->figureCoordSet.insert(startPos);
 
-	COORD curCOORD{startPos.X - radius + 1, startPos.Y - radius - 1};
-	for (;curCOORD.X <= startPos.X + horizontalRadius - 1; curCOORD.X ++)
+	COORD curCOORD{startPos.X - horzontalRadius + 1, startPos.Y - verticalRadius - 1};
+	for (;curCOORD.X <= startPos.X + horzontalRadius - 1; curCOORD.X ++)
 	{
 		this->figureCoordSet.insert(curCOORD);
 		COORD tempCOORD{ curCOORD.X, curCOORD.Y + 2 * verticalRadius + 2 };
 		this->figureCoordSet.insert(tempCOORD);
 	}
 	
-	curCOORD.X = startPos.X - horizontalRadius - 1;
+	curCOORD.X = startPos.X - horzontalRadius - 1;
 	curCOORD.Y = startPos.Y - verticalRadius + 1;
 
 	for (; curCOORD.Y <= startPos.Y + verticalRadius - 1; curCOORD.Y ++)
 	{
-		this->figureCoordSet.insert(curCOORD);
-		COORD tempCOORD{ curCOORD.X + horizontalRadius * 2 + 2, curCOORD.Y};
-		this->figureCoordSet.insert(tempCOORD);
+		if (curCOORD.Y == startPos.Y)
+		{
+			curCOORD.X--;  // -= 1
+			this->figureCoordSet.insert(curCOORD);					
+			curCOORD.X++;											// += 1
+			COORD tempCOORD{ curCOORD.X + horzontalRadius * 2 + 2 + 1, curCOORD.Y };
+			this->figureCoordSet.insert(tempCOORD);
+		}
+		else
+		{
+			this->figureCoordSet.insert(curCOORD);				
+			COORD tempCOORD{ curCOORD.X + horzontalRadius * 2 + 2, curCOORD.Y };
+			this->figureCoordSet.insert(tempCOORD);
+		}
+		
 	}
 		
 	for (int i = 1; i <= 2; i ++)
 	{
-		COORD temp{ startPos.X - radius, startPos.Y + verticalRadius * pow(-1, i) };
+		COORD temp{ startPos.X - horzontalRadius, startPos.Y + verticalRadius * pow(-1, i) };
 		this->figureCoordSet.insert(temp);
-		temp.X += 2 * horizontalRadius;
+		temp.X += 2 * horzontalRadius;
 		this->figureCoordSet.insert(temp);
 	}
 

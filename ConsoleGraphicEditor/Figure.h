@@ -50,7 +50,7 @@ protected:
 class Rectangle2 : public Figure
 {
 public:
-    Rectangle2(const COORD& startPos, const size_t& width, const size_t& height, const WORD& colour);
+    Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour);
     string GetFigProperties() override;
 
 protected:
@@ -62,7 +62,7 @@ protected:
 class Square : public Rectangle2
 {
 public:
-    Square(const COORD& startPos, const size_t& side, const WORD& colour);
+    Square(const COORD& startPos, const short& side, const WORD& colour);
     string GetFigProperties() override;
 };
 
@@ -70,10 +70,12 @@ public:
 class Triangle : public Figure
 {
 public:
-    Triangle(const COORD& startPos, const size_t& base, const WORD& colour);
+    Triangle(const COORD& startPos, const short& base, const WORD& colour);
     string GetFigProperties() override;
 
 private:
+    const SHORT TRIANGLE_MIN_SIZE_OFFSET = 4;
+    const SHORT TRIANGLE_MIN_BASE = 2;
     size_t base;
 };
 
@@ -81,7 +83,7 @@ private:
 class Circle : public Figure
 {
 public:
-    Circle(const COORD& startPos, const size_t& radius, const WORD& colour);
+    Circle(const COORD& startPos, const short& radius, const WORD& colour);
     string GetFigProperties() override;
 
 private:
