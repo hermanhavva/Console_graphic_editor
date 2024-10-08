@@ -1,6 +1,5 @@
 #pragma once
 #include <deque>
-#include <windows.h>
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
@@ -48,19 +47,19 @@ protected:
 };
 
 // Rectangle class derived from Figure
-class Rectangle : public Figure
+class Rectangle2 : public Figure
 {
 public:
-    Rectangle(const size_t& width, const size_t& height, const COORD& startPos, const WORD& colour);
+    Rectangle2(const size_t& width, const size_t& height, const COORD& startPos, const WORD& colour);
     string GetFigProperties() override;
 
 protected:
-    const size_t width;
-    const size_t height;
+    const size_t width = 0;
+    const size_t height = 0;
 };
 
 // Square class derived from Rectangle
-class Square : public Rectangle
+class Square : public Rectangle2
 {
 public:
     Square(const size_t& side, const COORD& startPos, const WORD& colour);

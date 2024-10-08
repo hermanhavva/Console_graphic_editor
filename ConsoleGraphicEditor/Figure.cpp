@@ -1,5 +1,4 @@
 #include <deque>
-#include <windows.h>
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
@@ -76,7 +75,7 @@ bool Figure::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual>& in
 		return true;
 	}
 
-Rectangle::Rectangle(const size_t& width, const size_t& height, const COORD& startPos, const WORD& colour)
+Rectangle2::Rectangle2(const size_t& width, const size_t& height, const COORD& startPos, const WORD& colour)
 :	width(width),
 	height(height),
 	Figure(startPos, colour) 
@@ -100,7 +99,7 @@ Rectangle::Rectangle(const size_t& width, const size_t& height, const COORD& sta
 }
 	
 	//virtual ~Rectangle() = default;
-string Rectangle::GetFigProperties() 
+string Rectangle2::GetFigProperties() 
 {
 	return format(" {} {} {} {} {} ", startPos.X, startPos.Y, width, height, colour);
 }
@@ -109,7 +108,7 @@ string Rectangle::GetFigProperties()
 Square::Square(const size_t& side, 
 			   const COORD& startPos, 
 			   const WORD& colour)
-:	Rectangle(side*2, side, startPos, colour) 
+:	Rectangle2(side*2, side, startPos, colour) 
 {
 	figTypeEnum = SQUARE;
 }
