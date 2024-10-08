@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class Maze
+class Polygon1
 {
 private:
 	const size_t width;
@@ -25,14 +25,14 @@ private:
 
 public:
 
-	Maze(const size_t& width, 
-		 const size_t& height, 
-		 const COORD   startLeftPoint)
+	Polygon1(const size_t& width, 
+		   const size_t& height, 
+	  	   const COORD   startLeftPoint)
 		:	width(width),
 			height(height),
 			startLeftPoint(startLeftPoint) { }
 
-	void ClearMaze(HANDLE hout) const 
+	void ClearPolygon(HANDLE hout) const 
 	{
 		COORD curCOORD = COORD{ static_cast<SHORT>(startLeftPoint.X + 2), static_cast<SHORT>(startLeftPoint.Y + 1) };
 
@@ -46,7 +46,7 @@ public:
 		}
 	}
 
-	void PrintMaze(HANDLE hout) const
+	void PrintPolygon(HANDLE hout) const
 	{
 		SetConsoleTextAttribute(hout, defaultColour);
 		SetConsoleCursorPosition(hout, startLeftPoint);
