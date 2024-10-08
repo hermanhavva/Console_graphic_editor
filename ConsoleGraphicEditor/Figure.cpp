@@ -2,7 +2,6 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
-//#include <iostream>
 #include <format>
 #include "Figure.h"
 #include "COORD_logic.h" 
@@ -75,24 +74,24 @@ bool Figure::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual>& in
 		return true;
 	}
 
-Rectangle2::Rectangle2(const size_t& width, const size_t& height, const COORD& startPos, const WORD& colour)
-:	width(width),
+Rectangle2::Rectangle2(const COORD& startPos, const size_t& width, const size_t& height, const WORD& colour)
+:	width(width*2),
 	height(height),
 	Figure(startPos, colour) 
 {
-	for (COORD curCoord = startPos; curCoord.X <= startPos.X + width; curCoord.X++)  // horizontal
+	for (COORD curCoord = startPos; curCoord.X <= startPos.X + this->width; curCoord.X++)  // horizontal
 	{
 		figureCoordSet.insert(curCoord);
-		curCoord.Y += height;
+		curCoord.Y += this->height;
 		figureCoordSet.insert(curCoord);
-		curCoord.Y -= height;
+		curCoord.Y -= this->height;
 	}
-	for (COORD curCoord = startPos; curCoord.Y <= startPos.Y + height; curCoord.Y++)  // vertical
+	for (COORD curCoord = startPos; curCoord.Y <= startPos.Y + this->height; curCoord.Y++)  // vertical
 	{
 		figureCoordSet.insert(curCoord);
-		curCoord.X += width;
+		curCoord.X += this->width;
 		figureCoordSet.insert(curCoord);
-		curCoord.X -= width;
+		curCoord.X -= this->width;
 	}
 	figDrawOrderDeque.push_back(this);  // push new instance to the back
 	figTypeEnum = RECTANGLE;
@@ -105,10 +104,10 @@ string Rectangle2::GetFigProperties()
 }
 
 
-Square::Square(const size_t& side, 
-			   const COORD& startPos, 
+Square::Square(const COORD& startPos, 
+			   const size_t& side,
 			   const WORD& colour)
-:	Rectangle2(side*2, side, startPos, colour) 
+:	Rectangle2(startPos, side, side, colour)
 {
 	figTypeEnum = SQUARE;
 }
@@ -119,8 +118,8 @@ string Square::GetFigProperties()
 }
 
 
-Triangle::Triangle(const size_t& base, 
-	 			   const COORD& startPos, 
+Triangle::Triangle(const COORD& startPos,
+				   const size_t& base,  
 				   const WORD& colour)
 		: base(base),
 		Figure(startPos, colour)  // here calling base class constructor
@@ -169,30 +168,34 @@ Circle::Circle(const COORD & startPos, const size_t & radius, const WORD & colou
 	:	radius(radius), 
 		Figure(startPos, colour)
 {
+	const size_t verticalRadius = radius;
+	const size_t horizontalRadius = radius * 2;
 	
+	this->figureCoordSet.insert(startPos);
+
 	COORD curCOORD{startPos.X - radius + 1, startPos.Y - radius - 1};
-	for (;curCOORD.X <= startPos.X + radius - 1; curCOORD.X ++)
+	for (;curCOORD.X <= startPos.X + horizontalRadius - 1; curCOORD.X ++)
 	{
 		this->figureCoordSet.insert(curCOORD);
-		COORD tempCOORD{ curCOORD.X, curCOORD.Y + 2 * radius + 2 };
+		COORD tempCOORD{ curCOORD.X, curCOORD.Y + 2 * verticalRadius + 2 };
 		this->figureCoordSet.insert(tempCOORD);
 	}
 	
-	curCOORD.X = startPos.X - radius - 1;
-	curCOORD.Y = startPos.Y - radius + 2;
+	curCOORD.X = startPos.X - horizontalRadius - 1;
+	curCOORD.Y = startPos.Y - verticalRadius + 1;
 
-	for (; curCOORD.Y <= startPos.Y + radius - 2; curCOORD.Y ++)
+	for (; curCOORD.Y <= startPos.Y + verticalRadius - 1; curCOORD.Y ++)
 	{
 		this->figureCoordSet.insert(curCOORD);
-		COORD tempCOORD{ curCOORD.X + radius + 2, curCOORD.Y};
+		COORD tempCOORD{ curCOORD.X + horizontalRadius * 2 + 2, curCOORD.Y};
 		this->figureCoordSet.insert(tempCOORD);
 	}
 		
 	for (int i = 1; i <= 2; i ++)
 	{
-		COORD temp{ startPos.X - radius, startPos.Y + radius * pow(-1, i) };
+		COORD temp{ startPos.X - radius, startPos.Y + verticalRadius * pow(-1, i) };
 		this->figureCoordSet.insert(temp);
-		temp.X += 2 * radius;
+		temp.X += 2 * horizontalRadius;
 		this->figureCoordSet.insert(temp);
 	}
 
