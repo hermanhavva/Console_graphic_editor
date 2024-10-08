@@ -183,8 +183,6 @@ Circle::Circle(const COORD & startPos,
 	}
 	const size_t verticalRadius = radius;
 	const size_t horzontalRadius = radius * 2;
-	
-	this->figureCoordSet.insert(startPos);
 
 	COORD curCOORD{startPos.X - horzontalRadius + 1, startPos.Y - verticalRadius - 1};
 	for (;curCOORD.X <= startPos.X + horzontalRadius - 1; curCOORD.X ++)
