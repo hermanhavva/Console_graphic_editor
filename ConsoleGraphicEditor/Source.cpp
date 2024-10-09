@@ -5,9 +5,10 @@
 #include "colours.h"
 #include "Program.h"
 #include "Figure.h"
-#include "helper.h" 
+//#include "helper.h" 
  
 
+HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
 int main() 
   {
 	
@@ -26,17 +27,17 @@ int main()
 	unique_ptr<Figure> startFigure = make_unique<Rectangle2>(Rectangle2(startPos, 0,0, yellowFontBlackText));
 	while (true) 
 	{
-		try 
+		try  
 		{
 			program->PrintPolygon();
 			program->PrintMainMenu();
 			program->GetUserCommand();
 			if (program->ExecuteCommand() == 0)
 			{
-				cout << ">>success\tPress any key to proceed";
+				cout << ">>success\t\t*Press any key to proceed*";
 				_getch();
 			}
-			_getch();
+			//_getch();
 			program->ClearMainMenu();
 
 		}

@@ -48,6 +48,7 @@ void Program::PrintPolygon() const
 }
 
 int Program::GetUserCommand() {
+    cout << ">>";
     getline(cin, userInput);
     ssInput = stringstream(userInput);
     string token;
@@ -87,20 +88,23 @@ int Program::GetUserCommand() {
 
 int Program::ExecuteCommand() {
     string token;
+    COORD defaultPos{ MENU_POS.X, MENU_POS.Y + 4 };
 
     switch (curCommand) {
     case DRAW:
         polygon->PrintPolygon(hout);
         polygon->ClearPolygon(hout);
-        for (auto& curFigure : Figure::GetAllFigsPtrInDrawOrder()) {
+        for (auto& curFigure : GetAllFigsPtrInDrawOrder()) 
+        {
             polygon->PrintFigure(hout, curFigure->GetThisFigCoordsSet(), curFigure->GetThisFigColour());
         }
+        SetConsoleTextAttribute(hout, yellowFontBlackText);
         break;
 
     case LIST:
         SetConsoleTextAttribute(hout, yellowFontBlackText);
         system("cls");
-        for (auto& curFig : Figure::GetAllFigsPtrInDrawOrder()) 
+        for (auto& curFig : GetAllFigsPtrInDrawOrder()) 
         {
             auto a = curFig->GetID();
             auto b = curFig->GetFigNameStr();
@@ -111,6 +115,7 @@ int Program::ExecuteCommand() {
         _getch();
         system("cls");
         polygon->PrintPolygon(hout);
+        this->PrintMainMenu();
         break;
 
     case SHAPES:
@@ -123,9 +128,12 @@ int Program::ExecuteCommand() {
         break;
 
     case UNDO:
+        figDrawOrderDeque.pop_back();
         break;
 
     case CLEAR:
+        polygon->ClearPolygon(hout);
+        
         break;
 
     case SAVE:
@@ -138,8 +146,110 @@ int Program::ExecuteCommand() {
         throw runtime_error("Unknown command or command not specified\n");
         return -1;
     }
-
+    SetConsoleCursorPosition(hout, defaultPos);
+    
     return 0;
+}
+
+
+deque <shared_ptr<Figure>> Program::GetAllFigsPtrInDrawOrder() 
+{
+    return figDrawOrderDeque;
+}
+
+string& Program::GetConfigurationStr() 
+{
+    string result;
+    string type;
+    for (auto& curFigPtr : figDrawOrderDeque)
+    {
+        string curID = to_string(curFigPtr->GetID());
+        if (dynamic_cast<Square*>(curFigPtr.get()))
+        {
+            result += curID + "SQUARE";
+        }
+        else if (dynamic_cast<Triangle*>(curFigPtr.get()))
+        {
+            result += curID + "TRIANGLE";
+        }
+        else if (dynamic_cast<Circle*>(curFigPtr.get()))
+        {
+            result += curID + "CIRCLE";
+        }
+        else
+        {
+            result += curID + "RECTANGLE";
+        }
+        result += curFigPtr->GetFigProperties() + '\n';
+    }
+    return result;
+}
+
+bool Program::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2)
+{
+    if (inSet1.size() != inSet2.size())
+    {
+        return false;
+    }
+    for (auto& coord : inSet1)
+    {
+        if (!(inSet2.contains(coord)))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+int Program::SelectFigById(const unsigned int& id)
+{
+    if (!idToFigurePtrMap.contains(id))
+    {
+        return -1;
+    }
+    auto& selectedFigPtr = idToFigurePtrMap[id];
+    unordered_set<COORD, COORDHash, COORDEqual> selectedFigCoordSet = selectedFigPtr->GetThisFigCoordsSet();
+
+    for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
+    {
+        auto curCoordSet = figDrawOrderDeque[index]->GetThisFigCoordsSet();
+
+        if (AreSetsEqual(selectedFigCoordSet, curCoordSet))
+        {
+            figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
+            figDrawOrderDeque.push_back(selectedFigPtr);
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+int Program::DeleteThisFig(shared_ptr<Figure> inFigure)
+{
+    for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
+    {
+        auto curFigurePtr = figDrawOrderDeque[index];
+        if (curFigurePtr->IsEqual(inFigure))
+        {
+            idToFigurePtrMap.erase(inFigure->GetID());
+            figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+bool Program::IfDuplicate(shared_ptr<Figure> inFigure) 
+{
+    for (auto& curFigure : figDrawOrderDeque)
+    {
+        if (inFigure->IsEqual(curFigure))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int Program::HandleAddFigure() {
@@ -151,67 +261,87 @@ int Program::HandleAddFigure() {
     ssInput >> figType;
 
     if (figType == "rectangle") {
-        paramAmount = 4;
+        paramAmount = 5;
         figureType = RECTANGLE;
     }
     else if (figType == "square") {
-        paramAmount = 3;
+        paramAmount = 4;
         figureType = SQUARE;
     }
     else if (figType == "triangle") {
-        paramAmount = 3;
+        paramAmount = 4;
         figureType = TRIANGLE;
     }
     else if (figType == "circle") {
-        paramAmount = 3;
+        paramAmount = 4;
         figureType = CIRCLE;
     }
 
     while (ssInput >> param && paramCounter <= paramAmount) {
-        if (paramAmount == paramCounter && IsUnsignedDigit(param)) {
+        paramCounter++;
+        if (paramAmount == paramCounter && IsUnsignedDigit(param)) 
+        {
+            if (stoi(param) < 1 || stoi(param) > 6)
+            {
+                throw runtime_error("The colour must be >= 1 && <= 6");
+            }
             figColour = colourMap[stoi(param)];
-            continue;
+            break;
         }
         if (!IsUnsignedDigit(param)) {
-            cout << "Invalid input(must be unsigned digit)\n";
+            throw runtime_error("Invalid input(must be unsigned digit)");
             return -1;
         }
-        if (paramCounter == 0) {
+        if (paramCounter == 1) {
             startPos.X = stoi(param);
         }
-        else if (paramCounter == 1) {
+        else if (paramCounter == 2) {
             startPos.Y = stoi(param);
         }
-        else if (paramCounter == 2) {
+        else if (paramCounter == 3) {
             figMeasure1 = stoi(param);
         }
-        else {
+        else if (paramCounter == 4){
             figMeasure2 = stoi(param);
         }
-        paramCounter++;
+        else
+        {
+            throw runtime_error("The arguments do not match");
+        }
+        
+    }
+    if (paramCounter != paramAmount)
+    {
+        throw runtime_error("Wrong number of arguments");
     }
 
-    unique_ptr<Figure> figure;
-    switch (figureType) {
+    shared_ptr<Figure> figure;
+    switch (figureType) 
+    {
     case RECTANGLE:
-        figure = make_unique<Rectangle2>(Rectangle2(startPos, figMeasure1, figMeasure2, figColour));
+        figure = make_shared<Rectangle2>(Rectangle2(startPos, figMeasure1, figMeasure2, figColour));
         break;
     case TRIANGLE:
-        figure = make_unique<Triangle>(Triangle(startPos, figMeasure1, figColour));
+        figure = make_shared<Triangle>(Triangle(startPos, figMeasure1, figColour));
         break;
     case SQUARE:
-        figure = make_unique<Square>(Square(startPos, figMeasure1, figColour));
+        figure = make_shared<Square>(Square(startPos, figMeasure1, figColour));
         break;
     case CIRCLE:
-        figure = make_unique<Circle>(Circle(startPos, figMeasure1, figColour));
+        figure = make_shared<Circle>(Circle(startPos, figMeasure1, figColour));
         break;
     }
-
-    if (!polygon->IsFigurePrintable(figure->GetThisFigStartPos(), figure->GetThisFigCoordsSet())) {
-        figure->DeleteThisFig();
+    if (IfDuplicate(figure))
+    {
+        throw runtime_error("The figure is duplicate");
+    }
+    else if (!polygon->IsFigurePrintable(figure->GetThisFigStartPos(), figure->GetThisFigCoordsSet())) {
+        DeleteThisFig(figure);
         throw runtime_error("Figure is not printable");
         return -1;
     }
+    idToFigurePtrMap[figure->GetID()] = figure;
+    figDrawOrderDeque.push_back(figure);
 }
 
 bool Program::IsUnsignedDigit(string strToCheck) {

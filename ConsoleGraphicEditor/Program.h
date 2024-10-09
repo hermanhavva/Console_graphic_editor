@@ -7,9 +7,13 @@
 #include <conio.h>
 #include <format>
 #include <algorithm>
+#include <unordered_map>
+#include <deque>
+
 #include "Figure.h"
 #include "colours.h"
 #include "maze.cpp"
+#include "COORD_logic.h"
 
 
 using namespace std;
@@ -43,9 +47,20 @@ public:
     int GetUserCommand();
     int ExecuteCommand();
 
+    static deque<shared_ptr<Figure>> GetAllFigsPtrInDrawOrder() ;
+    static string& GetConfigurationStr();
+    static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
+    static bool IfDuplicate(shared_ptr<Figure>);
+    static int DeleteThisFig(shared_ptr<Figure>);
+    static int SelectFigById(const unsigned int& id);
+
+    inline static deque<shared_ptr<Figure>> figDrawOrderDeque;
+    inline static unordered_map<size_t, shared_ptr<Figure>> idToFigurePtrMap;
+    
+
 private:
-    const string MAIN_MENU_STR = "List of commands:\tdraw\t\tlist\t\tshapes\t\tadd <shape> <COORD.X> <COORD.Y> <property>\n"
-        "\t\t\tundo\t\tclear\t\tsave <filename>\tload <filename>\nEnter your command, please:\n";
+    const string MAIN_MENU_STR = "List of commands:\tdraw\t\tlist\t\tshapes\t\t  add  | <shape> <COORD.X> <COORD.Y> <property>\n"
+        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\nEnter your command, please:\n";
     const COORD MENU_POS;
     const WORD TEXT_COLOUR;
     const HANDLE hout;

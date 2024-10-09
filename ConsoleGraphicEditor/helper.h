@@ -1,6 +1,8 @@
 #pragma once
 #include <windows.h>
 #include <iostream>
+#include "COORD_logic.h"
 
-HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
-CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+//CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+
+

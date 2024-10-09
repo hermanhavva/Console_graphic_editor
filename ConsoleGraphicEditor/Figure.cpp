@@ -4,9 +4,9 @@
 #include <string>
 #include <format>
 #include "Figure.h"
+//#include "helper.h"
 #include "COORD_logic.h" 
 using namespace std;
-
 
 
 
@@ -16,54 +16,19 @@ Figure::Figure(const COORD& startPos, const WORD& colour)
 	this->startPos = startPos;
 	this->colour = colour;
 	id = count;
-	idToFigurePtrMap[id] = this;
+	//idToFigurePtrMap[id] = this;
 	figTypeEnum = DEFAULT_TYPE;
 }
 	
-int Figure::SelectFigById(const size_t& id)
-	{
-		if (!idToFigurePtrMap.contains(id))
-		{
-			return -1;
-		}
-		Figure* selectedFigPtr = idToFigurePtrMap[id];
-		unordered_set<COORD, COORDHash, COORDEqual> selectedFigCoordSet = selectedFigPtr->GetThisFigCoordsSet();
 
-		for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
-		{
-			auto curCoordSet = figDrawOrderDeque[index]->GetThisFigCoordsSet();
-
-			if (AreSetsEqual(selectedFigCoordSet, curCoordSet))
-			{
-				figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
-				figDrawOrderDeque.push_back(this);
-				return 0;
-			}
-		}
-		
-		return -1;
-	}
 	
-int Figure::DeleteThisFig()
-{
-	for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
-	{
-		auto curFigurePtr = figDrawOrderDeque[index];
-		if (curFigurePtr->IsEqual(this))
-		{
-			idToFigurePtrMap.erase(this->id);
-			figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
-			return 0;
-		}
-	}
-	return -1;
-}
+
 
 unsigned int Figure::GetID() const
 {
 	return this->id;
 }
-
+/*
 bool Figure::IfDuplicate() const
 {
 	for (auto& curFigure : figDrawOrderDeque)
@@ -75,6 +40,7 @@ bool Figure::IfDuplicate() const
 	}
 	return false;
 }
+*/
 
 FIGURE_TYPE Figure::GetType() const
 {
@@ -90,17 +56,17 @@ WORD Figure::GetThisFigColour() const
 {
 	return this->colour;
 }
-
+/*
 deque <Figure*> Figure::GetAllFigsPtrInDrawOrder() 
 	{
 		return figDrawOrderDeque;
 	}
-	
+*/	
 unordered_set<COORD, COORDHash, COORDEqual> Figure::GetThisFigCoordsSet() const 
 {
 	return this->figureCOORDSet;
 }
-
+/*
 bool Figure::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2)
 	{
 		if (inSet1.size() != inSet2.size())
@@ -116,6 +82,7 @@ bool Figure::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual> inS
 		}
 		return true;
 	}
+*/
 
 COORD Figure::GetThisFigStartPos() const
 {
@@ -147,13 +114,14 @@ Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& h
 		figureCOORDSet.insert(curCoord);
 		curCoord.X -= this->width;
 	}
-	
+	/*
 	if (this->IfDuplicate())
 	{
 		throw runtime_error("The figure is duplicate");
 	}
+	*/
 
-	figDrawOrderDeque.push_back(this);  // push new instance to the back
+//	figDrawOrderDeque.push_back(this);  // push new instance to the back
 	figTypeEnum = RECTANGLE;
 }
 	
@@ -184,9 +152,9 @@ bool Rectangle2::IsEqual(Figure* other) const
 }
 */
 
-bool Rectangle2::IsEqual(Figure* other) const
+bool Rectangle2::IsEqual(shared_ptr<Figure> other) const
 {
-	Rectangle2* otherRect = dynamic_cast<Rectangle2*>(other);
+	Rectangle2* otherRect = dynamic_cast<Rectangle2*>(other.get());
 	if (!otherRect)
 	{
 		return false;
@@ -258,13 +226,13 @@ Triangle::Triangle(const COORD& startPos,
 			
 			this->figureCOORDSet.insert(tempCOORD);
 		}
-		
+		/*
 		if (this->IfDuplicate())
 		{
 			throw runtime_error("The figure is duplicate");
 		}
-
-		figDrawOrderDeque.push_back(this);
+		*/
+		//figDrawOrderDeque.push_back(this);
 		figTypeEnum = TRIANGLE;
 	}
 
@@ -273,14 +241,14 @@ string Triangle::GetFigProperties()
 	return format(" {} {} {} {} ", startPos.X, startPos.Y, base, colour);
 }
 	
-bool Triangle::IsEqual(Figure* other) const
+bool Triangle::IsEqual(shared_ptr<Figure> other) const
 {
-	if (!dynamic_cast<Triangle*>(other))
+	if (!dynamic_cast<Triangle*>(other.get()))
 	{
 		return false;
 	}
 	COORD otherStartPos(this->startPos);
-	return AreSetsEqual(this->GetThisFigCoordsSet(), other->GetThisFigCoordsSet()) &&
+	return AreCOORDSetsEqual(this->GetThisFigCoordsSet(), other->GetThisFigCoordsSet()) &&
 		this->startPos.X == otherStartPos.X &&
 		this->startPos.Y == otherStartPos.Y;
 }
@@ -338,13 +306,13 @@ Circle::Circle(const COORD & startPos,
 		temp.X += 2 * horzontalRadius;
 		this->figureCOORDSet.insert(temp);
 	}
-
+	/*
 	if (this->IfDuplicate())
 	{
 		throw runtime_error("The figure is duplicate");
 	}
-
-	figDrawOrderDeque.push_back(this);
+	*/
+	//figDrawOrderDeque.push_back(this);
 }
 
 string Circle::GetFigProperties() 
@@ -352,18 +320,18 @@ string Circle::GetFigProperties()
 	return format(" {} {} {} {} ", startPos.X, startPos.Y, radius, colour);
 }
 
-bool Circle::IsEqual(Figure* other) const
+bool Circle::IsEqual(shared_ptr<Figure> other) const
 {
-	if (!dynamic_cast<Circle*>(other))
+	if (!dynamic_cast<Circle*>(other.get()))
 	{
 		return false;
 	}
 	COORD otherStartPos(this->startPos);
-	return AreSetsEqual(this->GetThisFigCoordsSet(), other->GetThisFigCoordsSet()) &&
+	return AreCOORDSetsEqual(this->GetThisFigCoordsSet(), other->GetThisFigCoordsSet()) &&
 		this->startPos.X == otherStartPos.X &&
 		this->startPos.Y == otherStartPos.Y;
 }
-
+/*
 string& Figure::GetConfigurationStr()
 {
 	string result;
@@ -391,3 +359,4 @@ string& Figure::GetConfigurationStr()
 	}
 	return result;
 }
+*/
