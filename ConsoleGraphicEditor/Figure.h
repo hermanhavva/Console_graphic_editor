@@ -13,7 +13,7 @@ enum FIGURE_TYPE
     SQUARE = 2,
     TRIANGLE = 3,
     CIRCLE = 4,
-    DEFAULT = 5
+    DEFAULT_TYPE = 5
 };
 
 class Figure abstract
@@ -23,12 +23,24 @@ public:
     virtual ~Figure() = default;
 
     virtual string GetFigProperties() = 0;
+   // virtual bool operator ==(const Figure& other) = 0;
+    virtual bool IsEqual(Figure* other) const = 0;
 
     int SelectFigById(const size_t& id);
-    FIGURE_TYPE GetType() const;
+    int DeleteThisFig();
+    unsigned int GetID() const;
+    bool IfDuplicate() const;
 
-    static deque<Figure*> GetAllFigsCoordsInDrawOrder();
+    string GetFigNameStr() const;
+    COORD GetThisFigStartPos() const;
+
+    FIGURE_TYPE GetType() const;
+    WORD GetThisFigColour() const;
+
+    
+    static deque<Figure*> GetAllFigsPtrInDrawOrder();
     static string& GetConfigurationStr();
+    static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
 
     unordered_set<COORD, COORDHash, COORDEqual> GetThisFigCoordsSet() const;
 
@@ -36,14 +48,17 @@ protected:
     FIGURE_TYPE figTypeEnum;
     COORD startPos;
     char symbolToDraw = '*';
+    string FIGURE_NAME;
     WORD colour;
-    unordered_set<COORD, COORDHash, COORDEqual> figureCoordSet;
+    unordered_set<COORD, COORDHash, COORDEqual> figureCOORDSet;
 
-    static inline size_t id = 0;
+    unsigned int id = 0;
+
+    inline static unsigned int count = 0;
     inline static deque<Figure*> figDrawOrderDeque;
     inline static unordered_map<size_t, Figure*> idToFigurePtrMap;
 
-    bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual>& inSet1, const unordered_set<COORD, COORDHash, COORDEqual>& inSet2);
+    
 };
 
 // Rectangle class derived from Figure
@@ -53,7 +68,11 @@ public:
     Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour);
     string GetFigProperties() override;
 
+    bool IsEqual (Figure* other) const override;
+
 protected:
+    size_t GetWidth() const;
+    size_t GetHeight() const;
     const size_t width = 0;
     const size_t height = 0;
 };
@@ -73,6 +92,8 @@ public:
     Triangle(const COORD& startPos, const short& base, const WORD& colour);
     string GetFigProperties() override;
 
+    bool IsEqual(Figure* other) const override;
+
 private:
     const SHORT TRIANGLE_MIN_SIZE_OFFSET = 4;
     const SHORT TRIANGLE_MIN_BASE = 2;
@@ -85,6 +106,8 @@ class Circle : public Figure
 public:
     Circle(const COORD& startPos, const short& radius, const WORD& colour);
     string GetFigProperties() override;
+
+    bool IsEqual(Figure* other) const override;
 
 private:
     size_t radius;

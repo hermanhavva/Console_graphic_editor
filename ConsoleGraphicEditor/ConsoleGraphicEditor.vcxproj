@@ -143,6 +143,8 @@
     <ClInclude Include="colours.h" />
     <ClInclude Include="COORD_logic.h" />
     <ClInclude Include="Figure.h" />
+    <ClInclude Include="helper.h" />
+    <ClInclude Include="Program.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

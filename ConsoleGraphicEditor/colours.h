@@ -1,10 +1,10 @@
 #pragma once
 #include <windows.h>
+#include <unordered_map>
+//using namespace std;
+//#include "helper.h"
 
-HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
-CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-
-const WORD originalAttributes = GetConsoleScreenBufferInfo(hout, &consoleInfo);
+//const WORD originalAttributes = GetConsoleScreenBufferInfo(hout, &consoleInfo);
 
 const WORD yellowFontBlackText = BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
 const WORD redText = FOREGROUND_RED | FOREGROUND_INTENSITY;
@@ -22,3 +22,14 @@ enum COLOR
 	BLUE = 5,
 	GREEN = 6
 };
+/*
+extern std::unordered_map<int, WORD> colourMap = 
+{
+	{BLACK, yellowFontBlackText},
+	{RED, redText | yellowFontBlackText},
+	{CYAN, cyanText | yellowFontBlackText},
+	{PURPLE, purpleText | yellowFontBlackText},
+	{BLUE, blueText | yellowFontBlackText},
+	{GREEN, greenText | yellowFontBlackText}
+};
+*/
