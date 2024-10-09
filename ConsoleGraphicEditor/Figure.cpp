@@ -4,7 +4,6 @@
 #include <string>
 #include <format>
 #include "Figure.h"
-//#include "helper.h"
 #include "COORD_logic.h" 
 using namespace std;
 
@@ -16,7 +15,6 @@ Figure::Figure(const COORD& startPos, const WORD& colour)
 	this->startPos = startPos;
 	this->colour = colour;
 	id = count;
-	//idToFigurePtrMap[id] = this;
 	figTypeEnum = DEFAULT_TYPE;
 }
 	
@@ -28,19 +26,6 @@ unsigned int Figure::GetID() const
 {
 	return this->id;
 }
-/*
-bool Figure::IfDuplicate() const
-{
-	for (auto& curFigure : figDrawOrderDeque)
-	{
-		if (this->IsEqual(curFigure))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-*/
 
 FIGURE_TYPE Figure::GetType() const
 {
@@ -56,33 +41,11 @@ WORD Figure::GetThisFigColour() const
 {
 	return this->colour;
 }
-/*
-deque <Figure*> Figure::GetAllFigsPtrInDrawOrder() 
-	{
-		return figDrawOrderDeque;
-	}
-*/	
+
 unordered_set<COORD, COORDHash, COORDEqual> Figure::GetThisFigCoordsSet() const 
 {
 	return this->figureCOORDSet;
 }
-/*
-bool Figure::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2)
-	{
-		if (inSet1.size() != inSet2.size())
-		{
-			return false;
-		}
-		for (auto& coord : inSet1)
-		{
-			if (!(inSet2.contains(coord)))
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-*/
 
 COORD Figure::GetThisFigStartPos() const
 {
@@ -114,14 +77,7 @@ Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& h
 		figureCOORDSet.insert(curCoord);
 		curCoord.X -= this->width;
 	}
-	/*
-	if (this->IfDuplicate())
-	{
-		throw runtime_error("The figure is duplicate");
-	}
-	*/
 
-//	figDrawOrderDeque.push_back(this);  // push new instance to the back
 	figTypeEnum = RECTANGLE;
 }
 	
@@ -133,24 +89,6 @@ size_t Rectangle2::GetHeight() const
 {
 	return this->height;
 }
-
-
-/*
-bool Rectangle2::IsEqual(Figure* other) const
-{
-	if (!dynamic_cast<Rectangle2*>(other))
-	{
-		return false;
-	}
-	COORD otherStartPos(other->GetThisFigStartPos());
-	auto set1 = other->GetThisFigCoordsSet();
-	auto set2 = this->GetThisFigCoordsSet();
-
-	return AreSetsEqual(set1, set2) &&  // when trying to grt the other-> i get exception in the file type_traits, why is that
-		   this->startPos.X == otherStartPos.X &&
-		   this->startPos.Y == otherStartPos.Y; 
-}
-*/
 
 bool Rectangle2::IsEqual(shared_ptr<Figure> other) const
 {
@@ -170,7 +108,6 @@ string Rectangle2::GetFigProperties()
 	return format(" {} {} {} {} {} ", startPos.X, startPos.Y, width, height, colour);
 }
 
-
 Square::Square(const COORD& startPos, 
 			   const short& side,
 			   const WORD& colour)
@@ -184,7 +121,6 @@ string Square::GetFigProperties()
 {
 	return format(" {} {} {} {} ", startPos.X, startPos.Y, height, colour);
 }
-
 
 Triangle::Triangle(const COORD& startPos,
 				   const short& base,  
@@ -226,13 +162,6 @@ Triangle::Triangle(const COORD& startPos,
 			
 			this->figureCOORDSet.insert(tempCOORD);
 		}
-		/*
-		if (this->IfDuplicate())
-		{
-			throw runtime_error("The figure is duplicate");
-		}
-		*/
-		//figDrawOrderDeque.push_back(this);
 		figTypeEnum = TRIANGLE;
 	}
 
@@ -306,18 +235,11 @@ Circle::Circle(const COORD & startPos,
 		temp.X += 2 * horzontalRadius;
 		this->figureCOORDSet.insert(temp);
 	}
-	/*
-	if (this->IfDuplicate())
-	{
-		throw runtime_error("The figure is duplicate");
-	}
-	*/
-	//figDrawOrderDeque.push_back(this);
 }
 
 string Circle::GetFigProperties() 
 {
-	return format(" {} {} {} {} ", startPos.X, startPos.Y, radius, colour);
+	return format(" {} {} {} {} ", startPos.X, startPos.Y, radius, colour); 
 }
 
 bool Circle::IsEqual(shared_ptr<Figure> other) const
@@ -331,32 +253,3 @@ bool Circle::IsEqual(shared_ptr<Figure> other) const
 		this->startPos.X == otherStartPos.X &&
 		this->startPos.Y == otherStartPos.Y;
 }
-/*
-string& Figure::GetConfigurationStr()
-{
-	string result;
-	string type;
-	for (Figure* curFig : figDrawOrderDeque)
-	{
-		string curID = to_string(curFig->id);
-		if (dynamic_cast<Square*>(curFig))
-		{
-			result += curID + "SQUARE";
-		}
-		else if (dynamic_cast<Triangle*>(curFig))
-		{
-			result += curID + "TRIANGLE";
-		}
-		else if (dynamic_cast<Circle*>(curFig))
-		{
-			result += curID + "CIRCLE";
-		}
-		else
-		{
-			result += curID + "RECTANGLE";
-		}
-		result += curFig->GetFigProperties() + '\n';
-	}
-	return result;
-}
-*/

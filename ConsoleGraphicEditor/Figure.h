@@ -1,7 +1,5 @@
 #pragma once
-//#include <deque>
-//#include <unordered_set>
-//#include <unordered_map>
+
 #include <string>
 #include "COORD_logic.h" 
 
@@ -9,7 +7,7 @@
 using namespace std;
 
 enum FIGURE_TYPE
-{
+{ 
     RECTANGLE = 1,
     SQUARE = 2,
     TRIANGLE = 3,
@@ -24,13 +22,9 @@ public:
     virtual ~Figure() = default;
 
     virtual string GetFigProperties() = 0;
-   // virtual bool operator ==(const Figure& other) = 0;
     virtual bool IsEqual(shared_ptr<Figure> other) const = 0;
 
-   // int SelectFigById(const size_t& id);
-    int DeleteThisFig();
     unsigned int GetID() const;
-    //bool IfDuplicate() const;
 
     string GetFigNameStr() const;
     COORD GetThisFigStartPos() const;
@@ -39,12 +33,6 @@ public:
     WORD GetThisFigColour() const;
 
   
-
-    /*
-    static deque<Figure*> GetAllFigsPtrInDrawOrder();
-    static string& GetConfigurationStr();
-    static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
-    */ 
     unordered_set<COORD, COORDHash, COORDEqual> GetThisFigCoordsSet() const;
 
 protected:

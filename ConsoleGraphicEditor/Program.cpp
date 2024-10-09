@@ -7,7 +7,7 @@ Program::Program(const HANDLE& hout,
     const COORD& menuPos,
     const WORD& textColour)
     : hout(hout),
-    MENU_POS(menuPos),
+    MENU_POS(menuPos), 
     TEXT_COLOUR(textColour) 
 {
 

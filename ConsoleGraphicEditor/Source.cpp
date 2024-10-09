@@ -17,8 +17,7 @@ int main()
 	COORD startPos{ 0 };
 	startPos.X = 10;
 	startPos.Y = 1; 
-	//auto maze = make_unique<Polygon1>(80, 20, startPos);
-	//maze->PrintPolygon(hout);  
+
 	startPos.X = 15;
 	startPos.Y = 10;
 	COORD menuPos{ 0, 23 };

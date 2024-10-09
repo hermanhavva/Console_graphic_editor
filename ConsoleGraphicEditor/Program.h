@@ -8,8 +8,7 @@
 #include <format>
 #include <algorithm>
 #include <unordered_map>
-#include <deque>
-
+#include <deque> 
 #include "Figure.h"
 #include "colours.h"
 #include "maze.cpp"

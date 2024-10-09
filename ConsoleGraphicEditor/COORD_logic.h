@@ -9,7 +9,7 @@ struct COORDHash
 {
 	size_t operator()(const COORD& coord) const
 	{
-		return std::hash<SHORT>()(coord.X) ^ (std::hash<SHORT>()(coord.Y) << 1);
+		return std::hash<SHORT>()(coord.X) ^ (std::hash<SHORT>()(coord.Y) << 1); 
 	}
 };
 
