@@ -1,10 +1,9 @@
 #pragma once
 #include <windows.h>
+#include <unordered_map>
 
-HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
-CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 
-const WORD originalAttributes = GetConsoleScreenBufferInfo(hout, &consoleInfo);
+//const WORD originalAttributes = GetConsoleScreenBufferInfo(hout, &consoleInfo);
 
 const WORD yellowFontBlackText = BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
 const WORD redText = FOREGROUND_RED | FOREGROUND_INTENSITY;

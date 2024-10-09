@@ -2,7 +2,6 @@
 
 #include <windows.h> 
 #include <iostream>
-#include <unordered_set>
 #include "COORD_logic.h" 
 
 using namespace std;
@@ -51,23 +50,40 @@ public:
 		SetConsoleTextAttribute(hout, defaultColour);
 		SetConsoleCursorPosition(hout, startLeftPoint);
 		
-		for (COORD curCoord = startLeftPoint; curCoord.X <= startLeftPoint.X + width; curCoord.X ++)  // horizontal
+		for (COORD curCOORD = startLeftPoint; curCOORD.X <= startLeftPoint.X + width; curCOORD.X ++)  // horizontal
 		{
-			SetConsoleCursorPosition(hout, curCoord);
+			SetConsoleCursorPosition(hout, curCOORD);
 			cout << symbol;
-			curCoord.Y += height;
-			SetConsoleCursorPosition(hout, curCoord);
+			curCOORD.Y += height;
+			SetConsoleCursorPosition(hout, curCOORD);
 			cout << symbol;
-			curCoord.Y -= height;
+			curCOORD.Y -= height;  
+			
+			if (curCOORD.X % 3 == 0)
+			{
+				COORD temp{ curCOORD.X, curCOORD.Y - 1};
+				SetConsoleCursorPosition(hout, temp);
+				cout << temp.X;
+			}
+			
+
 		}
-		for (COORD curCoord = startLeftPoint; curCoord.Y <= startLeftPoint.Y + height; curCoord.Y++)  // vertical
+		for (COORD curCOORD = startLeftPoint; curCOORD.Y <= startLeftPoint.Y + height; curCOORD.Y++)  // vertical
 		{
-			SetConsoleCursorPosition(hout, curCoord);
+			SetConsoleCursorPosition(hout, curCOORD);
 			cout << symbol;
-			curCoord.X += width;
-			SetConsoleCursorPosition(hout, curCoord);
+			curCOORD.X += width;
+			SetConsoleCursorPosition(hout, curCOORD);
 			cout << symbol;
-			curCoord.X -= width; 
+			curCOORD.X -= width; 
+			
+			if (curCOORD.Y % 2 == 0)
+			{
+				COORD temp{ curCOORD.X - 3, curCOORD.Y };
+				SetConsoleCursorPosition(hout, temp);
+				cout << temp.Y;
+			}
+			
 		}
 	}
 	bool IsFigurePrintable(const COORD& startPos, const unordered_set<COORD, COORDHash, COORDEqual>& figereSetCoords) const
