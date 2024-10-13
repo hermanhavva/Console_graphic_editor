@@ -229,7 +229,7 @@ int Program::DeleteThisFig(shared_ptr<Figure> inFigure)
 {
     for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
     {
-        auto curFigurePtr = figDrawOrderDeque[index];
+        auto& curFigurePtr = figDrawOrderDeque[index];
         if (curFigurePtr->IsEqual(inFigure))
         {
             idToFigurePtrMap.erase(inFigure->GetID());
@@ -336,7 +336,7 @@ int Program::HandleAddFigure() {
         throw runtime_error("The figure is duplicate");
     }
     else if (!polygon->IsFigurePrintable(figure->GetThisFigStartPos(), figure->GetThisFigCoordsSet())) {
-        DeleteThisFig(figure);
+        //DeleteThisFig(figure);
         throw runtime_error("Figure is not printable");
         return -1;
     }

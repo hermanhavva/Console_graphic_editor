@@ -35,8 +35,8 @@ int main()
 			{
 				cout << ">>success\t\t*Press any key to proceed*";
 				_getch();
-			}
-			//_getch();
+			} 
+			
 			program->ClearMainMenu();
 
 		}
