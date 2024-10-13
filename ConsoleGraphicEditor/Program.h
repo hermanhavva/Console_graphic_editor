@@ -46,7 +46,7 @@ public:
     int HandleSaveToFile();
 
     static deque<shared_ptr<Figure>> GetAllFigsPtrInDrawOrder() ;
-    static string& GetConfigurationStr();
+    static string GetConfigurationStr();
     static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
     static bool IfDuplicate(shared_ptr<Figure>);
     static int DeleteThisFig(shared_ptr<Figure>);
@@ -83,24 +83,28 @@ private:
         {GREEN, greenText | yellowFontBlackText}
     };
 
-	class FileParser
-	{
-	public:
-		FileParser(const wstring& fileName);
-        FileParser();
+    class FileSaver
+    {
+    public:
+        FileSaver(const wstring& fileName);
+        ~FileSaver();
+        int SaveFiguresConfig(string) const;
+    private:
+        HANDLE fileHandle;
+    };
 
-        ~FileParser();
-		
-        vector<string> GetFiguresConfig();
-        int SaveFiguresConfig(const wstring&, const string&);
+    class FileLoader
+    {
+    public:
+        FileLoader(const wstring& fileName);
+        ~FileLoader();
+        vector<string> LoadFiguresConfig();
+    private:
+        HANDLE fileHandle;
+        unsigned int rowCounter = 1;
+        int const CHUNK_SIZE = 1024;
+    };
 
-	private:
-        bool isFileLoadable = true;
-		unsigned int rowCounter = 1;
-		wstring fileName;
-		HANDLE fileHandle;
-		int const CHUNK_SIZE = 1024;
-	};
 
 };
 
