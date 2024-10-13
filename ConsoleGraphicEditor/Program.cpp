@@ -434,7 +434,7 @@ Program::FileSaver::FileSaver(const wstring& fileName)
                             GENERIC_WRITE, 
                             FILE_SHARE_READ,
                             NULL, 
-                            CREATE_NEW | OPEN_EXISTING, 
+                            CREATE_ALWAYS, 
                             FILE_ATTRIBUTE_NORMAL, 
                             NULL);
     cout << GetLastError();
@@ -449,7 +449,6 @@ int Program::FileSaver::SaveFiguresConfig(string config) const
     DWORD bytesWritten = 0;
     DWORD bytesToWrite = static_cast<DWORD>(config.size());
 
-    // Write the data to the file
     BOOL result = WriteFile
     (
         this->fileHandle,
@@ -459,7 +458,7 @@ int Program::FileSaver::SaveFiguresConfig(string config) const
         NULL
     );
     cout << GetLastError();
-    if (!result || bytesWritten != bytesToWrite)
+    if (!result)
     {
         throw runtime_error("Error writing to the file");
     }
