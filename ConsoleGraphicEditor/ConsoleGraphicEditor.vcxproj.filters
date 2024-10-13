@@ -35,13 +35,13 @@
     <ClInclude Include="colours.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="COORD_logic.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="Figure.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Program.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="COORD_logic.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

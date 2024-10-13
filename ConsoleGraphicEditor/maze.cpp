@@ -18,7 +18,7 @@ private:
 	{
 		return (inCoord.X >= startLeftPoint.X + 2 &&
 				inCoord.X <= startLeftPoint.X + width - 2 &&
-				inCoord.Y > startLeftPoint.Y + 1 &&
+				inCoord.Y > startLeftPoint.Y &&
 				inCoord.Y < startLeftPoint.Y + height);
 	}
 

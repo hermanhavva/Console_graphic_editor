@@ -7,8 +7,6 @@
 #include "COORD_logic.h" 
 using namespace std;
 
-
-
 Figure::Figure(const COORD& startPos, const WORD& colour)
 {
 	count++;
@@ -17,10 +15,6 @@ Figure::Figure(const COORD& startPos, const WORD& colour)
 	id = count;
 	figTypeEnum = DEFAULT_TYPE;
 }
-	
-
-	
-
 
 unsigned int Figure::GetID() const
 {
