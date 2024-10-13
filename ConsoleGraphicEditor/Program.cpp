@@ -128,15 +128,18 @@ int Program::ExecuteCommand() {
         break;
 
     case UNDO:
-        figDrawOrderDeque.pop_back();
+        if (!figDrawOrderDeque.empty())
+        {
+            figDrawOrderDeque.pop_back();
+        }
         break;
 
     case CLEAR:
         polygon->ClearPolygon(hout);
-        
         break;
 
     case SAVE:
+        HandleLoadFromFile();
         break;
 
     case LOAD:
@@ -151,6 +154,67 @@ int Program::ExecuteCommand() {
     return 0;
 }
 
+int Program::HandleLoadFromFile()
+{
+    string token;
+    unsigned short paramCounter = 0, paramAmount = 1;
+    
+    figDrawOrderDeque.clear();
+    idToFigurePtrMap.clear();
+
+    while (ssInput >> token)
+    {
+        paramCounter++;
+    }
+    if (paramCounter > paramAmount)
+    {
+        throw runtime_error("Too many arguments passed");
+    }
+    wstring fileName = wstring(token.begin(), token.end());
+    
+    auto fileParser = make_unique<FileParser>(FileParser(fileName));
+    vector<string> lines = fileParser->GetFiguresConfig();
+    try
+    {
+        for (auto& line : lines)
+        {
+            ssInput = stringstream(line);
+            HandleAddFigure();
+        }
+    }
+    catch (const exception& e)
+    {
+        throw runtime_error(format("Problem parsing the file: {}", e.what()));
+    }
+
+    return 0;
+}
+
+int Program::HandleSaveToFile() 
+{
+    string token;
+    unsigned short paramCounter = 0, paramAmount = 1;
+    while (ssInput >> token)
+    {
+        paramCounter++;
+    }
+    if (paramCounter > paramAmount)
+    {
+        throw runtime_error("Too many arguments passed");
+    }
+    wstring fileName = wstring(token.begin(), token.end());
+    auto fileParser = make_unique<FileParser>(FileParser());
+
+    if (figDrawOrderDeque.empty())
+    {
+        fileParser->SaveFiguresConfig(fileName, "empty");
+    }
+    else 
+    {
+        fileParser->SaveFiguresConfig(fileName, GetConfigurationStr());
+    }
+}
+
 
 deque <shared_ptr<Figure>> Program::GetAllFigsPtrInDrawOrder() 
 {
@@ -163,22 +227,22 @@ string& Program::GetConfigurationStr()
     string type;
     for (auto& curFigPtr : figDrawOrderDeque)
     {
-        string curID = to_string(curFigPtr->GetID());
+        //string curID = to_string(curFigPtr->GetID());
         if (dynamic_cast<Square*>(curFigPtr.get()))
         {
-            result += curID + "SQUARE";
+            result += "square";
         }
         else if (dynamic_cast<Triangle*>(curFigPtr.get()))
         {
-            result += curID + "TRIANGLE";
+            result += "triangle";
         }
         else if (dynamic_cast<Circle*>(curFigPtr.get()))
         {
-            result += curID + "CIRCLE";
+            result += "circle";
         }
         else
         {
-            result += curID + "RECTANGLE";
+            result += "rectangle";
         }
         result += curFigPtr->GetFigProperties() + '\n';
     }
@@ -252,7 +316,8 @@ bool Program::IfDuplicate(shared_ptr<Figure> inFigure)
     return false;
 }
 
-int Program::HandleAddFigure() {
+int Program::HandleAddFigure() 
+{
     string figType, param;
     unsigned short figMeasure1 = 0, figMeasure2 = 0, paramAmount = 0, paramCounter = 0;
     FIGURE_TYPE figureType = DEFAULT_TYPE;
@@ -347,3 +412,99 @@ int Program::HandleAddFigure() {
 bool Program::IsUnsignedDigit(string strToCheck) {
     return all_of(strToCheck.begin(), strToCheck.end(), ::isdigit);
 }
+
+Program::FileParser::FileParser(const wstring& fileName) 
+    :   fileName(fileName)
+{
+    fileHandle = CreateFile(this->fileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        throw runtime_error("Could not open the file\n");
+    }
+}
+
+Program::FileParser::FileParser()
+{
+    isFileLoadable = false;
+}
+
+Program::FileParser::~FileParser()
+{
+    CloseHandle(fileHandle);
+}
+vector<string> Program::FileParser::GetFiguresConfig()
+{
+    unique_ptr<char[]> buffer(new char[CHUNK_SIZE]);
+    DWORD bytesRead;
+    string line;
+    vector<string> result;
+    if (!isFileLoadable)
+    {
+        return result;  // empty
+    }
+
+    while (ReadFile(fileHandle, buffer.get(), CHUNK_SIZE, &bytesRead, NULL) && bytesRead > 0) {  // error reading symbols
+
+        for (DWORD index = 0; index < bytesRead; ++index)
+        {
+            char ch = buffer[index];
+
+            if (ch == '\n')
+            {
+                rowCounter++;
+                result.push_back(line);
+
+                if (!line.empty())
+                {
+                    line.clear();  // Clear the line buffer
+                }
+            }
+            else if (line == "empty" && rowCounter == 0)
+            {
+                return result;
+            }
+            else if (ch != '\r') {
+                line += ch;  // Append character to line
+            }
+        }
+    }
+    return result;
+}
+
+int Program::FileParser::SaveFiguresConfig(const wstring& fileName, const string& config)
+{
+    if (isFileLoadable)
+    {
+        return -1;
+    }
+
+    fileHandle = CreateFile(fileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        throw runtime_error("Could not open the file\n");
+    }
+
+    const char* buffer = config.c_str();
+    DWORD bytesWritten = 0;
+    DWORD bytesToWrite = static_cast<DWORD>(config.size());
+
+    // Write the data to the file
+    BOOL result = WriteFile
+    (
+        fileHandle,        
+        buffer,            
+        bytesToWrite,     
+        &bytesWritten,    
+        NULL              
+    );
+
+    if (!result || bytesWritten != bytesToWrite)
+    {
+        throw runtime_error("Error writing to the file");
+    }
+
+    return 0;  
+}
+

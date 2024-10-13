@@ -16,11 +16,7 @@ Figure::Figure(const COORD& startPos, const WORD& colour)
 	this->colour = colour;
 	id = count;
 	figTypeEnum = DEFAULT_TYPE;
-}
-	
-
-	
-
+}	
 
 unsigned int Figure::GetID() const
 {

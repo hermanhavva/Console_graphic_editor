@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <windows.h>
 #include <string>
@@ -14,8 +13,6 @@
 #include "maze.cpp"
 #include "COORD_logic.h"
 
-
-using namespace std;
 
 enum COMMAND_TYPE
 {
@@ -45,6 +42,8 @@ public:
     void PrintPolygon() const;
     int GetUserCommand();
     int ExecuteCommand();
+    int HandleLoadFromFile(); 
+    int HandleSaveToFile();
 
     static deque<shared_ptr<Figure>> GetAllFigsPtrInDrawOrder() ;
     static string& GetConfigurationStr();
@@ -58,19 +57,21 @@ public:
     
 
 private:
-    const string MAIN_MENU_STR = "List of commands:\tdraw\t\tlist\t\tshapes\t\t  add  | <shape> <COORD.X> <COORD.Y> <property>\n"
-        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\nEnter your command, please:\n";
     const COORD MENU_POS;
     const WORD TEXT_COLOUR;
     const HANDLE hout;
-    int HandleAddFigure();
-    bool IsUnsignedDigit(string strToCheck);
+    const string MAIN_MENU_STR = "List of commands:\tdraw\t\tlist\t\tshapes\t\t  add  | <shape> <COORD.X> <COORD.Y> <property>\n"
+        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\nEnter your command, please:\n";
+    
     string userInput = "";
     stringstream ssInput;
     COMMAND_TYPE curCommand = COMMAND_TYPE::DEFAULT;
     COORD figPosition{ 0,0 };
     WORD figColour = BLACK;
     unique_ptr<Polygon1> polygon;
+
+    int HandleAddFigure();
+    bool IsUnsignedDigit(string strToCheck);
 
     std::unordered_map<int, WORD> colourMap =
     {
@@ -81,5 +82,25 @@ private:
         {BLUE, blueText | yellowFontBlackText},
         {GREEN, greenText | yellowFontBlackText}
     };
+
+	class FileParser
+	{
+	public:
+		FileParser(const wstring& fileName);
+        FileParser();
+
+        ~FileParser();
+		
+        vector<string> GetFiguresConfig();
+        int SaveFiguresConfig(const wstring&, const string&);
+
+	private:
+        bool isFileLoadable = true;
+		unsigned int rowCounter = 1;
+		wstring fileName;
+		HANDLE fileHandle;
+		int const CHUNK_SIZE = 1024;
+	};
+
 };
 
