@@ -47,46 +47,123 @@ void Program::PrintPolygon() const
     polygon->PrintPolygon(hout);
 }
 
-int Program::GetUserCommand() {
-    cout << ">>";
-    getline(cin, userInput);
-    ssInput = stringstream(userInput);
-    string token;
-    ssInput >> token;
+vector<string> Program::GetValidUserInputAndSetCurCommand()
+{
+    string token, commandStr, figureTypeStr;
+    size_t paramAmount = 0;
+    vector<string> userCommandVector;
+    
+    while(ssInput >> token)
+    {
+        userCommandVector.push_back(token);
+    }
 
-    if (token == "draw") {
+
+    if (userCommandVector.empty())
+    {
+        throw runtime_error("Empty input");
+    }
+
+    commandStr = userCommandVector[0];
+ 
+    //  validation rules
+    if (commandStr == "draw") {
         curCommand = DRAW;
     }
-    else if (token == "list") {
+    else if (commandStr == "list") {
         curCommand = LIST;
     }
-    else if (token == "shapes") {
+    else if (commandStr == "shapes") {
         curCommand = SHAPES;
     }
-    else if (token == "add") {
+    else if (commandStr == "add") {
         curCommand = ADD;
     }
-    else if (token == "undo") {
+    else if (commandStr == "undo") {
         curCommand = UNDO;
     }
-    else if (token == "clear") {
+    else if (commandStr == "clear") {
         curCommand = CLEAR;
     }
-    else if (token == "save") {
+    else if (commandStr == "save") {
         curCommand = SAVE;
     }
-    else if (token == "load") {
+    else if (commandStr == "load") {
         curCommand = LOAD;
     }
     else {
-        curCommand = COMMAND_TYPE::DEFAULT;
-        return -1;
+        curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
+        throw runtime_error("Unknown or not specified command");
     }
 
-    return 0;
+    if ((curCommand == DRAW || curCommand == LIST || curCommand == SHAPES || curCommand == UNDO || curCommand == CLEAR) && (userCommandVector.size() != 1) )
+    {
+        curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
+        throw runtime_error("Wrong arguments");
+    }
+    else if ((curCommand == SAVE || curCommand == LOAD) && (userCommandVector.size() != 2))
+    {
+        curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
+        throw runtime_error("Wrong arguments");
+    }
+    
+    if (curCommand == ADD && (userCommandVector.size() < 6 || userCommandVector.size() > 7))
+    {
+        throw runtime_error("Wrong arguments");
+    }
+    else if (curCommand == ADD)
+    {
+        figureTypeStr = userCommandVector[1];
+
+        if (figureTypeStr == "rectangle")
+        {
+            paramAmount = 5;
+        }
+        else if (figureTypeStr == "circle" || figureTypeStr == "triangle" || figureTypeStr == "square")
+        {
+            paramAmount = 4;
+        }
+        if (userCommandVector.size() != paramAmount + 2)
+        {
+            throw runtime_error("Wrong number of arguments");
+        }
+
+        // validating the numerical part
+        size_t index = 2;
+        while (index <= paramAmount + 1)
+        {
+            if (!IsUnsignedDigit(userCommandVector[index]) ||
+                (index == paramAmount + 1 && (stoi(userCommandVector[index]) < MIN_COLOUR_INDEX || stoi(userCommandVector[index]) > MAX_COLOUR_INDEX)))
+            {
+                throw runtime_error("Arguments must be numeric and unsigned and 1 <= colour <= 6");
+            }
+
+            index++;
+        }
+    }
+    
+    
+
+    return userCommandVector;
 }
 
-int Program::ExecuteCommand() {
+vector<string> Program::GetUserCommand() {
+    cout << ">>";
+    getline(cin, userInput);
+    ssInput = stringstream(userInput); 
+    vector<string> validCommandVector;
+    try
+    {
+        validCommandVector = GetValidUserInputAndSetCurCommand();
+    }
+    catch (const std::exception& e)
+    {
+        throw e;
+    }
+    return validCommandVector;
+}
+
+int Program::ExecuteCommand(const vector<string>& commandVector) {
     string token;
     COORD defaultPos{ MENU_POS.X, MENU_POS.Y + 4 };
 
@@ -122,7 +199,7 @@ int Program::ExecuteCommand() {
         break;
 
     case ADD:
-        if (HandleAddFigure() == -1) {
+        if (HandleAddFigure(commandVector) == -1) {
             cout << "\nInvalid entry";
         }
         break;
@@ -142,7 +219,7 @@ int Program::ExecuteCommand() {
     case LOAD:
         break;
 
-    case DEFAULT:
+    case DEFAULT_COMMAND:
         throw runtime_error("Unknown command or command not specified\n");
         return -1;
     }
@@ -208,22 +285,23 @@ int Program::SelectFigById(const unsigned int& id)
         return -1;
     }
     auto& selectedFigPtr = idToFigurePtrMap[id];
-    unordered_set<COORD, COORDHash, COORDEqual> selectedFigCoordSet = selectedFigPtr->GetThisFigCoordsSet();
 
     for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
     {
-        auto curCoordSet = figDrawOrderDeque[index]->GetThisFigCoordsSet();
+        auto& curFigure = figDrawOrderDeque[index];
 
-        if (AreSetsEqual(selectedFigCoordSet, curCoordSet))
+        if (selectedFigPtr->IsEqual(curFigure))
         {
             figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
             figDrawOrderDeque.push_back(selectedFigPtr);
+            selectedFigurePtr = selectedFigPtr;
             return 0;
         }
     }
 
     return -1;
 }
+
 
 int Program::DeleteThisFig(shared_ptr<Figure> inFigure)
 {
@@ -252,71 +330,58 @@ bool Program::IfDuplicate(shared_ptr<Figure> inFigure)
     return false;
 }
 
-int Program::HandleAddFigure() {
-    string figType, param;
+int Program::HandleAddFigure(vector<string> commandVector) 
+{
+    string figTypeStr, param;
     unsigned short figMeasure1 = 0, figMeasure2 = 0, paramAmount = 0, paramCounter = 0;
-    FIGURE_TYPE figureType = DEFAULT_TYPE;
+    figTypeStr = commandVector[1];
+    FIGURE_TYPE curFigure = FIGURE_TYPE::DEFAULT_TYPE;
+
     WORD figColour;
     COORD startPos{ 0, 0 };
-    ssInput >> figType;
 
-    if (figType == "rectangle") {
+    if (figTypeStr == "rectangle") {
         paramAmount = 5;
-        figureType = RECTANGLE;
+        curFigure = RECTANGLE;
     }
-    else if (figType == "square") {
+    else if (figTypeStr == "square") {
         paramAmount = 4;
-        figureType = SQUARE;
+        curFigure = SQUARE;
     }
-    else if (figType == "triangle") {
+    else if (figTypeStr == "triangle") {
         paramAmount = 4;
-        figureType = TRIANGLE;
+        curFigure = TRIANGLE;
     }
-    else if (figType == "circle") {
+    else if (figTypeStr == "circle") {
         paramAmount = 4;
-        figureType = CIRCLE;
+        curFigure = CIRCLE;
     }
 
-    while (ssInput >> param && paramCounter <= paramAmount) {
-        paramCounter++;
-        if (paramAmount == paramCounter && IsUnsignedDigit(param)) 
+    for (size_t index = 2; index < commandVector.size(); index++) 
+    {
+       
+        if (index == 2) {
+            startPos.X = stoi(commandVector[index]);
+        }
+        else if (index == 3) {
+            startPos.Y = stoi(commandVector[index]);
+        }
+        else if (index == 4) {
+            figMeasure1 = stoi(commandVector[index]);
+        }
+        else if (index == 5 && curFigure == RECTANGLE)
         {
-            if (stoi(param) < 1 || stoi(param) > 6)
-            {
-                throw runtime_error("The colour must be >= 1 && <= 6");
-            }
-            figColour = colourMap[stoi(param)];
-            break;
-        }
-        if (!IsUnsignedDigit(param)) {
-            throw runtime_error("Invalid input(must be unsigned digit)");
-            return -1;
-        }
-        if (paramCounter == 1) {
-            startPos.X = stoi(param);
-        }
-        else if (paramCounter == 2) {
-            startPos.Y = stoi(param);
-        }
-        else if (paramCounter == 3) {
-            figMeasure1 = stoi(param);
-        }
-        else if (paramCounter == 4){
-            figMeasure2 = stoi(param);
+            figMeasure2 = stoi(commandVector[index]);
         }
         else
         {
-            throw runtime_error("The arguments do not match");
+            figColour = colourEnumToWordMap.at(stoi(commandVector[index]));
         }
         
     }
-    if (paramCounter != paramAmount)
-    {
-        throw runtime_error("Wrong number of arguments");
-    }
 
     shared_ptr<Figure> figure;
-    switch (figureType) 
+    switch (curFigure)
     {
     case RECTANGLE:
         figure = make_shared<Rectangle2>(Rectangle2(startPos, figMeasure1, figMeasure2, figColour));
@@ -336,13 +401,36 @@ int Program::HandleAddFigure() {
         throw runtime_error("The figure is duplicate");
     }
     else if (!polygon->IsFigurePrintable(figure->GetThisFigStartPos(), figure->GetThisFigCoordsSet())) {
-        //DeleteThisFig(figure);
         throw runtime_error("Figure is not printable");
-        return -1;
     }
     idToFigurePtrMap[figure->GetID()] = figure;
-    figDrawOrderDeque.push_back(figure);
+    figDrawOrderDeque.push_back(move(figure));
 }
+/*
+int Program::HandleChangeColour()
+{
+    string token;
+    unsigned short paramCounter = 0;
+    const unsigned short paramAmount = 1;
+    while(ssInput >> token)
+    {
+        ssInput >> token;
+        paramCounter++;
+    }
+    
+    if (!IsUnsignedDigit(token) || stoi(token) >  || paramCounter > paramAmount || paramCounter == 0)
+    {
+        throw runtime_error("Wrong arguments");
+    }
+    if (selectedFigurePtr == nullptr)
+    {
+        throw runtime_error("Select the figure first");
+    }
+    
+ //   selectedFigurePtr->SetColour(colourEnumToWordMap[token]);
+
+}
+*/
 
 bool Program::IsUnsignedDigit(string strToCheck) {
     return all_of(strToCheck.begin(), strToCheck.end(), ::isdigit);
