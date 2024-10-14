@@ -333,11 +333,11 @@ bool Program::IfDuplicate(shared_ptr<Figure> inFigure)
 int Program::HandleAddFigure(vector<string> commandVector) 
 {
     string figTypeStr, param;
-    unsigned short figMeasure1 = 0, figMeasure2 = 0, paramAmount = 0, paramCounter = 0;
+    unsigned short figMeasure1 = 0, figMeasure2 = 0, paramAmount = 0;
+    int figColour = 0;
     figTypeStr = commandVector[1];
     FIGURE_TYPE curFigure = FIGURE_TYPE::DEFAULT_TYPE;
 
-    WORD figColour;
     COORD startPos{ 0, 0 };
 
     if (figTypeStr == "rectangle") {
@@ -375,7 +375,7 @@ int Program::HandleAddFigure(vector<string> commandVector)
         }
         else
         {
-            figColour = colourEnumToWordMap.at(stoi(commandVector[index]));
+            figColour = stoi(commandVector[index]);
         }
         
     }

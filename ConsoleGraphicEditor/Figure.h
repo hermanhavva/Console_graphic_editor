@@ -18,7 +18,7 @@ enum FIGURE_TYPE
 class Figure abstract
 {
 public:
-    Figure(const COORD& startPos, const WORD& colour);
+    Figure(const COORD& startPos, const int& colour);
     virtual ~Figure() = default;
 
     virtual string GetFigProperties() = 0;
@@ -31,9 +31,10 @@ public:
 
     FIGURE_TYPE GetType() const;
     WORD GetThisFigColour() const;
-
   
     unordered_set<COORD, COORDHash, COORDEqual> GetThisFigCoordsSet() const;
+
+    void SetColour(const int&);
 
 protected:
     FIGURE_TYPE figTypeEnum;
@@ -55,7 +56,7 @@ protected:
 class Rectangle2 : public Figure
 {
 public:
-    Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour);
+    Rectangle2(const COORD& startPos, const short& width, const short& height, const int& colour);
     string GetFigProperties() override;
 
     bool IsEqual (shared_ptr<Figure> other) const override;
@@ -71,7 +72,7 @@ protected:
 class Square : public Rectangle2
 {
 public:
-    Square(const COORD& startPos, const short& side, const WORD& colour);
+    Square(const COORD& startPos, const short& side, const int& colour);
     string GetFigProperties() override;
 };
 
@@ -79,7 +80,7 @@ public:
 class Triangle : public Figure
 {
 public:
-    Triangle(const COORD& startPos, const short& base, const WORD& colour);
+    Triangle(const COORD& startPos, const short& base, const int& colour);
     string GetFigProperties() override;
 
     bool IsEqual(shared_ptr<Figure> other) const override;
@@ -94,7 +95,7 @@ private:
 class Circle : public Figure
 {
 public:
-    Circle(const COORD& startPos, const short& radius, const WORD& colour);
+    Circle(const COORD& startPos, const short& radius, const int& colour);
     string GetFigProperties() override;
 
     bool IsEqual(shared_ptr<Figure> other) const override;

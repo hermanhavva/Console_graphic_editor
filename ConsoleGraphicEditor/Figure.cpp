@@ -7,11 +7,11 @@
 #include "COORD_logic.h" 
 using namespace std;
 
-Figure::Figure(const COORD& startPos, const WORD& colour)
+Figure::Figure(const COORD& startPos, const int& colour)
 {
 	count++;
 	this->startPos = startPos;
-	this->colour = colour;
+	this->colour = colourEnumToWordMap.at(colour);
 	id = count;
 	figTypeEnum = DEFAULT_TYPE;
 }
@@ -46,7 +46,12 @@ COORD Figure::GetThisFigStartPos() const
 	return this->startPos;
 }
 
-Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour)
+void Figure::SetColour(const int& colour)
+{
+	this->colour = colourEnumToWordMap.at(colour);
+}
+
+Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& height, const int& colour)
 :	width(width),
 	height(height),
 	Figure(startPos, colour) 
@@ -106,7 +111,7 @@ string Rectangle2::GetFigProperties()
 
 Square::Square(const COORD& startPos, 
 			   const short& side,
-			   const WORD& colour)
+			   const int& colour)
 :	Rectangle2(startPos, side, side, colour)
 {
 	figTypeEnum = SQUARE;
@@ -120,9 +125,9 @@ string Square::GetFigProperties()
 
 Triangle::Triangle(const COORD& startPos,
 				   const short& base,  
-				   const WORD& colour)
+				   const int& colour)
 		: base(base + TRIANGLE_MIN_BASE),
-		Figure(startPos, colour)  
+		Figure(startPos, colour)
 	{
 		if (this->base < TRIANGLE_MIN_BASE)
 		{
@@ -180,7 +185,7 @@ bool Triangle::IsEqual(shared_ptr<Figure> other) const
 
 Circle::Circle(const COORD & startPos, 
 			   const short& radius, 
-			   const WORD & colour)
+			   const int& colour)
 	:	radius(radius), 
 		Figure(startPos, colour)
 {
@@ -191,34 +196,34 @@ Circle::Circle(const COORD & startPos,
 
 	FIGURE_NAME = "CIRCLE";
 
-	const size_t verticalRadius = radius;
-	const size_t horzontalRadius = radius * 2;
+	const size_t VERTICAL_RADIUS = radius;
+	const size_t HORIZONTAL_RADIUS = radius * 2;
 
-	COORD curCOORD{startPos.X - horzontalRadius + 1, startPos.Y - verticalRadius - 1};
-	for (;curCOORD.X <= startPos.X + horzontalRadius - 1; curCOORD.X ++)
+	COORD curCOORD{startPos.X - HORIZONTAL_RADIUS + 1, startPos.Y - VERTICAL_RADIUS - 1};
+	for (;curCOORD.X <= startPos.X + HORIZONTAL_RADIUS - 1; curCOORD.X ++)
 	{
 		this->figureCOORDSet.insert(curCOORD);
-		COORD tempCOORD{ curCOORD.X, curCOORD.Y + 2 * verticalRadius + 2 };
+		COORD tempCOORD{ curCOORD.X, curCOORD.Y + 2 * VERTICAL_RADIUS + 2 };
 		this->figureCOORDSet.insert(tempCOORD);
 	}
 	
-	curCOORD.X = startPos.X - horzontalRadius - 1;
-	curCOORD.Y = startPos.Y - verticalRadius + 1;
+	curCOORD.X = startPos.X - HORIZONTAL_RADIUS - 1;
+	curCOORD.Y = startPos.Y - VERTICAL_RADIUS + 1;
 
-	for (; curCOORD.Y <= startPos.Y + verticalRadius - 1; curCOORD.Y ++)
+	for (; curCOORD.Y <= startPos.Y + VERTICAL_RADIUS - 1; curCOORD.Y ++)
 	{
 		if (curCOORD.Y == startPos.Y)
 		{
 			curCOORD.X--;  // -= 1
 			this->figureCOORDSet.insert(curCOORD);					
 			curCOORD.X++;											// += 1
-			COORD tempCOORD{ curCOORD.X + horzontalRadius * 2 + 2 + 1, curCOORD.Y };
+			COORD tempCOORD{ curCOORD.X + HORIZONTAL_RADIUS * 2 + 2 + 1, curCOORD.Y };
 			this->figureCOORDSet.insert(tempCOORD);
 		}
 		else
 		{
 			this->figureCOORDSet.insert(curCOORD);				
-			COORD tempCOORD{ curCOORD.X + horzontalRadius * 2 + 2, curCOORD.Y };
+			COORD tempCOORD{ curCOORD.X + HORIZONTAL_RADIUS * 2 + 2, curCOORD.Y };
 			this->figureCOORDSet.insert(tempCOORD);
 		}
 		
@@ -226,9 +231,9 @@ Circle::Circle(const COORD & startPos,
 		
 	for (int i = 1; i <= 2; i ++)
 	{
-		COORD temp{ startPos.X - horzontalRadius, startPos.Y + verticalRadius * pow(-1, i) };
+		COORD temp{ startPos.X - HORIZONTAL_RADIUS, startPos.Y + VERTICAL_RADIUS * pow(-1, i) };
 		this->figureCOORDSet.insert(temp);
-		temp.X += 2 * horzontalRadius;
+		temp.X += 2 * HORIZONTAL_RADIUS;
 		this->figureCOORDSet.insert(temp);
 	}
 }
