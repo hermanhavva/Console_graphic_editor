@@ -11,7 +11,7 @@
 #include <deque> 
 #include "Figure.h"
 #include "colours.h"
-#include "maze.cpp"
+#include "maze.h"
 #include "COORD_logic.h"
 
 
@@ -27,7 +27,7 @@ enum COMMAND_TYPE
     CLEAR = 6,
     SAVE = 7,
     LOAD = 8,
-    DEFAULT = 9
+    DEFAULT_COMMAND = 9
 };
 
 class Program
@@ -43,8 +43,8 @@ public:
     void ClearMainMenu() const;
     void PrintMainMenu() const;
     void PrintPolygon() const;
-    int GetUserCommand();
-    int ExecuteCommand();
+    vector<string> GetUserCommand();
+    int ExecuteCommand(const vector<string>&);
 
     static deque<shared_ptr<Figure>> GetAllFigsPtrInDrawOrder() ;
     static string& GetConfigurationStr();
@@ -63,23 +63,20 @@ private:
     const COORD MENU_POS;
     const WORD TEXT_COLOUR;
     const HANDLE hout;
-    int HandleAddFigure();
+    int HandleAddFigure(vector<string>);
+    int HandleChangeColour();
+    inline static shared_ptr<Figure> selectedFigurePtr = nullptr;
+
+    vector<string> GetValidUserInputAndSetCurCommand();
     bool IsUnsignedDigit(string strToCheck);
     string userInput = "";
     stringstream ssInput;
-    COMMAND_TYPE curCommand = COMMAND_TYPE::DEFAULT;
+    COMMAND_TYPE curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
+//FIGURE_TYPE curFigure = FIGURE_TYPE::DEFAULT_TYPE;
     COORD figPosition{ 0,0 };
     WORD figColour = BLACK;
     unique_ptr<Polygon1> polygon;
 
-    std::unordered_map<int, WORD> colourMap =
-    {
-        {BLACK, yellowFontBlackText},
-        {RED, redText | yellowFontBlackText},
-        {CYAN, cyanText | yellowFontBlackText},
-        {PURPLE, purpleText | yellowFontBlackText},
-        {BLUE, blueText | yellowFontBlackText},
-        {GREEN, greenText | yellowFontBlackText}
-    };
+
 };
 

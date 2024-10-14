@@ -47,17 +47,19 @@ COORD Figure::GetThisFigStartPos() const
 }
 
 Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour)
-:	width(width*2),
+:	width(width),
 	height(height),
 	Figure(startPos, colour) 
 {
+	const short unsigned HORIZONTAL_WIDTH = width * 2;
+
 	if (this->width < 0 || this->height < 0)
 	{
 		throw invalid_argument("Base and Width must be at least 0.");
 	}
 	FIGURE_NAME = "RECTANGLE";
 
-	for (COORD curCoord = startPos; curCoord.X <= startPos.X + this->width; curCoord.X++)  // horizontal
+	for (COORD curCoord = startPos; curCoord.X <= startPos.X + HORIZONTAL_WIDTH; curCoord.X++)  // horizontal
 	{
 		figureCOORDSet.insert(curCoord);
 		curCoord.Y += this->height;
@@ -67,9 +69,9 @@ Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& h
 	for (COORD curCoord = startPos; curCoord.Y <= startPos.Y + this->height; curCoord.Y++)  // vertical
 	{
 		figureCOORDSet.insert(curCoord);
-		curCoord.X += this->width;
+		curCoord.X += HORIZONTAL_WIDTH;
 		figureCOORDSet.insert(curCoord);
-		curCoord.X -= this->width;
+		curCoord.X -= HORIZONTAL_WIDTH;
 	}
 
 	figTypeEnum = RECTANGLE;
@@ -93,13 +95,13 @@ bool Rectangle2::IsEqual(shared_ptr<Figure> other) const
 	}
 	COORD otherStartPos(other->GetThisFigStartPos());
 	COORD thisStratPos(this->GetThisFigStartPos());
+	
 	return (thisStratPos.X == otherStartPos.X && otherStartPos.Y == thisStratPos.Y && this->GetWidth() == otherRect->GetWidth() && this->GetHeight() == otherRect->GetHeight());
-
 }
 
 string Rectangle2::GetFigProperties() 
 {
-	return format(" {} {} {} {} {} ", startPos.X, startPos.Y, width, height, colour);
+	return format(" {} {} {} {} {} ", startPos.X, startPos.Y, width, height, colourWordToEnumMap.at(colour));
 }
 
 Square::Square(const COORD& startPos, 
@@ -113,7 +115,7 @@ Square::Square(const COORD& startPos,
 
 string Square::GetFigProperties()
 {
-	return format(" {} {} {} {} ", startPos.X, startPos.Y, height, colour);
+	return format(" {} {} {} {} ", startPos.X, startPos.Y, height, colourWordToEnumMap.at(colour));
 }
 
 Triangle::Triangle(const COORD& startPos,
@@ -161,7 +163,7 @@ Triangle::Triangle(const COORD& startPos,
 
 string Triangle::GetFigProperties() 
 {
-	return format(" {} {} {} {} ", startPos.X, startPos.Y, base, colour);
+	return format(" {} {} {} {} ", startPos.X, startPos.Y, base, colourWordToEnumMap.at(colour));
 }
 	
 bool Triangle::IsEqual(shared_ptr<Figure> other) const
@@ -233,7 +235,7 @@ Circle::Circle(const COORD & startPos,
 
 string Circle::GetFigProperties() 
 {
-	return format(" {} {} {} {} ", startPos.X, startPos.Y, radius, colour); 
+	return format(" {} {} {} {} ", startPos.X, startPos.Y, radius, colourWordToEnumMap.at(colour));
 }
 
 bool Circle::IsEqual(shared_ptr<Figure> other) const

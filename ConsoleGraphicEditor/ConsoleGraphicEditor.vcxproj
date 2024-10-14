@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="colours.cpp" />
     <ClCompile Include="COORD_logic.cpp" />
     <ClCompile Include="Figure.cpp" />
     <ClCompile Include="maze.cpp">
@@ -144,6 +145,7 @@
     <ClInclude Include="colours.h" />
     <ClInclude Include="COORD_logic.h" />
     <ClInclude Include="Figure.h" />
+    <ClInclude Include="maze.h" />
     <ClInclude Include="Program.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

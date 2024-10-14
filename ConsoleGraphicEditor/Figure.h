@@ -2,7 +2,7 @@
 
 #include <string>
 #include "COORD_logic.h" 
-
+#include "colours.h"
 
 using namespace std;
 
@@ -38,9 +38,9 @@ public:
 protected:
     FIGURE_TYPE figTypeEnum;
     COORD startPos;
-    char symbolToDraw = '*';
     string FIGURE_NAME;
     WORD colour;
+
     unordered_set<COORD, COORDHash, COORDEqual> figureCOORDSet;
 
     unsigned int id = 0;

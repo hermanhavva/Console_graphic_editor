@@ -1,11 +1,8 @@
 #include <iostream>
 #include <windows.h>
-
-#include "maze.cpp"
 #include "colours.h"
 #include "Program.h"
 #include "Figure.h"
-//#include "helper.h" 
  
 
 HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -17,7 +14,7 @@ int main()
 	COORD startPos{ 0 };
 	startPos.X = 10;
 	startPos.Y = 1; 
-
+	
 	startPos.X = 15;
 	startPos.Y = 10;
 	COORD menuPos{ 0, 23 };
@@ -30,11 +27,12 @@ int main()
 		{
 			program->PrintPolygon();
 			program->PrintMainMenu();
-			program->GetUserCommand();
-			if (program->ExecuteCommand() == 0)
+			auto commandVector = program->GetUserCommand();
+			
+			if (program->ExecuteCommand(commandVector) == 0)
 			{
 				cout << ">>success\t\t*Press any key to proceed*";
-				_getch();
+ 				_getch();
 			} 
 			
 			program->ClearMainMenu();
@@ -50,12 +48,8 @@ int main()
 	}
 	
 	
-	//unique_ptr<Figure> figure1 = make_unique<Rectangle2>(startPos, 2, 2, redText);
-	
-	//maze->PrintFigure(hout, figure1->GetThisFigCoordsSet(), redText | yellowFontBlackText);
 	Sleep(10000);
 	
-	//maze->ClearPolygon(hout);
 	Sleep(4100);
  	
 	return 0;

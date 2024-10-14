@@ -1,9 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <unordered_map>
-
-
-//const WORD originalAttributes = GetConsoleScreenBufferInfo(hout, &consoleInfo);
+using namespace std;
 
 const WORD yellowFontBlackText = BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
 const WORD redText = FOREGROUND_RED | FOREGROUND_INTENSITY;
@@ -11,6 +9,9 @@ const WORD cyanText = FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 const WORD purpleText = FOREGROUND_RED | FOREGROUND_BLUE;
 const WORD blueText = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 const WORD greenText = FOREGROUND_GREEN;
+
+const short int MAX_COLOUR_INDEX = 6;
+const short int MIN_COLOUR_INDEX = 1;
 
 enum COLOR 
 {
@@ -21,3 +22,7 @@ enum COLOR
 	BLUE = 5,
 	GREEN = 6
 };
+
+extern const std::unordered_map<int, WORD> colourEnumToWordMap;
+
+extern const std::unordered_map<WORD, int> colourWordToEnumMap;
