@@ -37,6 +37,7 @@ public:
     void SetColour(const int&);
 
 protected:
+    virtual void GenerateSetOfCOORD() = 0;
     FIGURE_TYPE figTypeEnum;
     COORD startPos;
     string FIGURE_NAME;
@@ -47,9 +48,6 @@ protected:
     unsigned int id = 0;
 
     inline static unsigned int count = 0;
-
-
-    
 };
 
 // Rectangle class derived from Figure
@@ -58,14 +56,16 @@ class Rectangle2 : public Figure
 public:
     Rectangle2(const COORD& startPos, const short& width, const short& height, const int& colour);
     string GetFigProperties() override;
-
+    void SetHeight(size_t);
+    void SetWidth(size_t);
     bool IsEqual (shared_ptr<Figure> other) const override;
 
 protected:
+    void GenerateSetOfCOORD() override;
     size_t GetWidth() const;
     size_t GetHeight() const;
-    const size_t width = 0;
-    const size_t height = 0;
+    size_t width = 0;
+    size_t height = 0;
 };
 
 // Square class derived from Rectangle

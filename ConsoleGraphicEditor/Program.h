@@ -19,15 +19,20 @@ using namespace std;
 
 enum COMMAND_TYPE
 {
-    DRAW = 1,
-    LIST = 2,
-    SHAPES = 3,
-    ADD = 4,
-    UNDO = 5,
-    CLEAR = 6,
-    SAVE = 7,
-    LOAD = 8,
-    DEFAULT_COMMAND = 9
+    DRAW    = 1,
+    LIST    = 2,
+    SHAPES  = 3,
+    ADD     = 4,
+    UNDO    = 5,
+    CLEAR   = 6,
+    SELECT  = 7,
+    PAINT   = 8,
+    MOVE    = 9,
+    REMOVE  = 10,
+    EDIT    = 11,
+    SAVE    = 12,
+    LOAD    = 13,
+    DEFAULT_COMMAND = 14
 };
 
 class Program
@@ -51,7 +56,7 @@ public:
     static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
     static bool IfDuplicate(shared_ptr<Figure>);
     static int DeleteThisFig(shared_ptr<Figure>);
-    static int SelectFigById(const unsigned int& id);
+    
 
     inline static deque<shared_ptr<Figure>> figDrawOrderDeque;
     inline static unordered_map<size_t, shared_ptr<Figure>> idToFigurePtrMap;
@@ -63,13 +68,18 @@ private:
     const COORD MENU_POS;
     const WORD TEXT_COLOUR;
     const HANDLE hout;
+
+    shared_ptr<Figure> selectedFigurePtr = nullptr;
     
     vector<string> GetUserCommand(string);
-    
-    int  HandleAddFigure(vector<string>);
+    void HandleAddFigure(vector<string>);
+    void HandleDraw() const;
     void HandleSaveToFile(wstring) const;
     void HandleLoadFromFile(wstring);
-    int  HandleChangeColour();
+    void HandlePaint();
+    void HandleRemove();
+    void HandleSelectFigById(const unsigned int& id);
+    void HandleRemove();
     
     inline static shared_ptr<Figure> selectedFigurePtr = nullptr;
 

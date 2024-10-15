@@ -88,6 +88,24 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
     else if (commandStr == "save") {
         curCommand = SAVE;
     }
+    else if (commandStr == "select") {
+        curCommand = SELECT;
+    }
+    else if (commandStr == "remove") {
+        curCommand = REMOVE;
+    } 
+    else if (commandStr == "paint") {
+        curCommand = PAINT;
+    }
+    else if (commandStr == "move"){
+        curCommand = MOVE;
+    }
+    else if (commandStr == "edit") {
+        curCommand = EDIT;
+    }
+    else if (commandStr == "save") {
+        curCommand = SAVE;
+    }
     else if (commandStr == "load") {
         curCommand = LOAD;
     }
@@ -100,7 +118,8 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
         curCommand == LIST   || 
         curCommand == SHAPES || 
         curCommand == UNDO   || 
-        curCommand == CLEAR)  && 
+        curCommand == CLEAR  || 
+        curCommand == REMOVE) && 
         (userCommandVector.size() != 1))
     {
         curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
@@ -148,7 +167,73 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
             index++;
         }
     }
+    else if ((curCommand == SELECT || curCommand == PAINT) && userCommandVector.size() != 2)
+    {
+        throw runtime_error("Wrong arguments, must be <id> for select");
+    }
+    else if (curCommand == SELECT)
+    {
+        if (!IsUnsignedDigit(userCommandVector[1]))
+        {
+            throw runtime_error("Wrong argumnets, select <id>");
+        }
+    }
+    else if (curCommand == PAINT)
+    {
+        auto& colourStr = userCommandVector[1];
 
+        if (!IsUnsignedDigit(colourStr) || stoi(colourStr) < 0 || stoi(colourStr) > 6)
+        {
+            throw runtime_error("Wrong argumnets, paint <colour>");
+        }
+    }
+    else if (curCommand == MOVE && userCommandVector.size() != 3)
+    {
+        throw runtime_error("Wrong argumnets, paint <colour>");
+    }
+    else if (curCommand == MOVE)
+    {
+        for (size_t index = 1; index <= 2; index++)
+        {
+            if (!IsUnsignedDigit(userCommandVector[index]))
+            {
+                throw runtime_error("Wrong arguments, move <X> <Y>");
+            }
+        }
+    }
+    else if (curCommand == EDIT && userCommandVector.size() < 2 || userCommandVector.size() > 3) { // validate the selected figure 
+        throw runtime_error("Wrong argumnets");
+    }
+    else if (curCommand == EDIT)
+    {
+        size_t paramAmount;
+        if (selectedFigurePtr == nullptr)
+        {
+            throw runtime_error("Figure is not selected");
+        }
+
+        switch (selectedFigurePtr->GetType())
+        {
+        case RECTANGLE:
+            paramAmount = 2;
+            break;
+        default:
+            paramAmount = 1;
+            break;
+        }
+        if (userCommandVector.size() != paramAmount + 1)
+        {
+            throw runtime_error("Wrong number of argumnets for selected figure");
+        }
+        for (size_t index = 1; index <= paramAmount; index++)
+        {
+            if (!IsUnsignedDigit(userCommandVector[index]))
+            {
+                throw runtime_error("Wrong argumnets, must be unsigned");
+            }
+        }
+    } 
+            
     return userCommandVector;
 }
 
@@ -190,13 +275,7 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
 
     switch (curCommand) {
     case DRAW:
-        polygon->PrintPolygon(hout);
-        polygon->ClearPolygon(hout);
-        for (auto& curFigure : GetAllFigsPtrInDrawOrder()) 
-        {
-            polygon->PrintFigure(hout, curFigure->GetThisFigCoordsSet(), curFigure->GetThisFigColour());
-        }
-        SetConsoleTextAttribute(hout, yellowFontBlackText);
+        HandleDraw();
         break;
 
     case LIST:
@@ -220,9 +299,7 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
         break;
 
     case ADD:
-        if (HandleAddFigure(commandVector) == -1) {
-            cout << "\nInvalid entry";
-        }
+        HandleAddFigure(commandVector);
         break;
 
     case UNDO:
@@ -233,7 +310,14 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
         polygon->ClearPolygon(hout);
         
         break;
-
+    case SELECT:
+        HandleSelectFigById(stoi(commandVector[1]));
+        break;
+    case REMOVE:
+        HandleRemove();
+        break;
+    case PAINT:
+        HandlePaint();
     case SAVE:
         HandleSaveToFile(wstring(commandVector[1].begin(), commandVector[1].end()));
         break;
@@ -301,31 +385,6 @@ bool Program::AreSetsEqual(const unordered_set <COORD, COORDHash, COORDEqual> in
     return true;
 }
 
-int Program::SelectFigById(const unsigned int& id)
-{
-    if (!idToFigurePtrMap.contains(id))
-    {
-        return -1;
-    }
-    auto& selectedFigPtr = idToFigurePtrMap[id];
-
-    for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
-    {
-        auto& curFigure = figDrawOrderDeque[index];
-
-        if (selectedFigPtr->IsEqual(curFigure))
-        {
-            figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
-            figDrawOrderDeque.push_back(selectedFigPtr);
-            selectedFigurePtr = selectedFigPtr;
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
-
 int Program::DeleteThisFig(shared_ptr<Figure> inFigure)
 {
     for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
@@ -353,7 +412,7 @@ bool Program::IfDuplicate(shared_ptr<Figure> inFigure)
     return false;
 }
 
-int Program::HandleAddFigure(vector<string> commandVector) 
+void Program::HandleAddFigure(vector<string> commandVector) 
 {
     string figTypeStr, param;
     unsigned short figMeasure1 = 0, figMeasure2 = 0, paramAmount = 0;
@@ -428,6 +487,59 @@ int Program::HandleAddFigure(vector<string> commandVector)
     }
     idToFigurePtrMap[figure->GetID()] = figure;
     figDrawOrderDeque.push_back(move(figure));
+}
+
+void Program::HandleDraw() const
+{
+    polygon->PrintPolygon(hout);
+    polygon->ClearPolygon(hout);
+    for (auto& curFigure : GetAllFigsPtrInDrawOrder())
+    {
+        polygon->PrintFigure(hout, curFigure->GetThisFigCoordsSet(), curFigure->GetThisFigColour());
+    }
+    SetConsoleTextAttribute(hout, yellowFontBlackText);
+}
+
+void Program::HandleSelectFigById(const unsigned int& id)
+{
+    if (!idToFigurePtrMap.contains(id))
+    {
+        throw runtime_error("Wrong ID specified");
+    }
+    selectedFigurePtr = idToFigurePtrMap[id];
+
+    for (size_t index = 0; index < figDrawOrderDeque.size(); index++)
+    {
+        auto& curFigure = figDrawOrderDeque[index];
+
+        if (selectedFigurePtr->IsEqual(curFigure))
+        {
+            figDrawOrderDeque.erase(figDrawOrderDeque.begin() + index);
+            figDrawOrderDeque.push_back(selectedFigurePtr);
+            selectedFigurePtr = selectedFigurePtr;
+        }
+    }
+    HandleDraw();   
+}
+
+void Program::HandleRemove()
+{
+    if (selectedFigurePtr == nullptr)
+    {
+        throw runtime_error("Figure is not seleted");
+    }
+
+    DeleteThisFig(selectedFigurePtr);
+    selectedFigurePtr = nullptr;
+}
+
+void Program::HandlePaint()
+{
+    if (selectedFigurePtr == nullptr)
+    {
+        throw runtime_error("Figure is not selected");
+    }
+
 }
 
 void Program::HandleLoadFromFile(wstring fileName)

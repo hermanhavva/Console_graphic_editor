@@ -56,13 +56,31 @@ Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& h
 	height(height),
 	Figure(startPos, colour) 
 {
-	const short unsigned HORIZONTAL_WIDTH = width * 2;
 
 	if (this->width < 0 || this->height < 0)
 	{
 		throw invalid_argument("Base and Width must be at least 0.");
 	}
 	FIGURE_NAME = "RECTANGLE";
+
+	figTypeEnum = RECTANGLE;
+}
+
+void Rectangle2::SetWidth(size_t width)
+{
+	this->width = width;
+}
+
+void Rectangle2::SetHeight(size_t height)
+{
+	this->height = height;
+}
+
+void Rectangle2::GenerateSetOfCOORD() 
+{
+	const short unsigned HORIZONTAL_WIDTH = width * 2;
+	
+	figureCOORDSet.clear();
 
 	for (COORD curCoord = startPos; curCoord.X <= startPos.X + HORIZONTAL_WIDTH; curCoord.X++)  // horizontal
 	{
@@ -78,14 +96,13 @@ Rectangle2::Rectangle2(const COORD& startPos, const short& width, const short& h
 		figureCOORDSet.insert(curCoord);
 		curCoord.X -= HORIZONTAL_WIDTH;
 	}
-
-	figTypeEnum = RECTANGLE;
 }
-	
+
 size_t Rectangle2::GetWidth() const
 {
 	return this->width;
 }
+
 size_t Rectangle2::GetHeight() const
 {
 	return this->height;
