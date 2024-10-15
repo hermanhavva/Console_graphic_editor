@@ -173,7 +173,7 @@ int Program::HandleLoadFromFile()
     }
     wstring fileName = wstring(token.begin(), token.end());
     
-    auto fileLoader = make_unique<FileLoader>(FileLoader(fileName));
+    auto fileLoader = make_unique<FileLoader>(fileName);
     vector<string> lines = fileLoader->LoadFiguresConfig();
     try
     {
@@ -204,11 +204,11 @@ int Program::HandleSaveToFile()
         throw runtime_error("Too many arguments passed");
     }
     wstring fileName = wstring(token.begin(), token.end());
-    auto fileSaver = make_unique<FileSaver>(FileSaver(fileName));
+    auto fileSaver = make_unique<FileSaver>(fileName);  // here the cinstructor is called and just after that destructor is called making the object invalid
 
     if (figDrawOrderDeque.empty())
     {
-        fileSaver->SaveFiguresConfig("empty");
+        fileSaver->SaveFiguresConfig("empty");  // that is why here an invalid handle
     }
     else 
     {
@@ -428,22 +428,25 @@ Program::FileParser::FileParser(const wstring& fileName)
 */
 
 
+
+
 Program::FileSaver::FileSaver(const wstring& fileName)
 {
-    fileHandle = CreateFile(fileName.c_str(), 
-                            GENERIC_WRITE, 
-                            FILE_SHARE_READ,
-                            NULL, 
-                            CREATE_ALWAYS, 
-                            FILE_ATTRIBUTE_NORMAL, 
-                            NULL);
-    cout << GetLastError();
+    fileHandle = CreateFile(fileName.c_str(),
+        GENERIC_WRITE,
+        FILE_SHARE_READ,
+        NULL,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+    cout << GetLastError() << endl;
     if (fileHandle == INVALID_HANDLE_VALUE)
     {
         throw runtime_error("Could not create the file\n");
     }
+
 }
-int Program::FileSaver::SaveFiguresConfig(string config) const 
+int Program::FileSaver::SaveFiguresConfig(string config) const
 {
     const char* buffer = config.c_str();
     DWORD bytesWritten = 0;
@@ -468,17 +471,19 @@ int Program::FileSaver::SaveFiguresConfig(string config) const
 Program::FileSaver::~FileSaver()
 {
     CloseHandle(fileHandle);
+    fileHandle = NULL;
 }
 
 Program::FileLoader::FileLoader(const wstring& fileName)
 {
     fileHandle = CreateFile(fileName.c_str(),
-                            GENERIC_READ,
-                            FILE_SHARE_READ,
-                            NULL,
-                            OPEN_EXISTING,
-                            FILE_ATTRIBUTE_NORMAL,
-                            NULL);
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+    cout << GetLastError() << endl;
     if (fileHandle == INVALID_HANDLE_VALUE)
     {
         throw runtime_error("Could not open the file");
@@ -487,9 +492,10 @@ Program::FileLoader::FileLoader(const wstring& fileName)
 Program::FileLoader::~FileLoader()
 {
     CloseHandle(fileHandle);
+    fileHandle = NULL;
 }
 
-vector<string> Program::FileLoader::LoadFiguresConfig() 
+vector<string> Program::FileLoader::LoadFiguresConfig()
 {
     unique_ptr<char[]> buffer(new char[CHUNK_SIZE]);
     DWORD bytesRead;
@@ -510,7 +516,7 @@ vector<string> Program::FileLoader::LoadFiguresConfig()
 
                 if (!line.empty())
                 {
-                    line.clear();  
+                    line.clear();
                 }
             }
             else if (line == "empty" && rowCounter == 1)
@@ -518,7 +524,7 @@ vector<string> Program::FileLoader::LoadFiguresConfig()
                 return result;
             }
             else if (ch != '\r') {
-                line += ch;  
+                line += ch;
             }
         }
     }
