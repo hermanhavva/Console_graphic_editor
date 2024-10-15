@@ -126,45 +126,47 @@ string Square::GetFigProperties()
 Triangle::Triangle(const COORD& startPos,
 				   const short& base,  
 				   const int& colour)
-		: base(base + TRIANGLE_MIN_BASE),
+		: base(base),
 		Figure(startPos, colour)
+{
+	short int intermediateBase = this->base + TRIANGLE_MIN_BASE;
+
+	if (base < 0)
 	{
-		if (this->base < TRIANGLE_MIN_BASE)
-		{
-			throw invalid_argument("Base must be at least 0.");
-		}
-		else if (this->base % 2 != 0)  // Base must not be odd
-		{
-			this->base++; 
-		}
-		
-		FIGURE_NAME = "TRIANGLE";
-
-		this->figureCOORDSet.insert(startPos);
-	
-		COORD baseCOORD = startPos;
-		COORD tempCOORD = startPos;
-
-		for (size_t index = 1; index <= this->base; index++)
-		{
-			baseCOORD.X++;
-			this->figureCOORDSet.insert(baseCOORD);
-			
-			tempCOORD.X = baseCOORD.X;
-			
-			if (index < (double)this->base / 2 + 1)
-			{
-				tempCOORD.Y--;
-			}
-			else
-			{
-				tempCOORD.Y++;
-			}
-			
-			this->figureCOORDSet.insert(tempCOORD);
-		}
-		figTypeEnum = TRIANGLE;
+		throw invalid_argument("Base must be at least 0.");
 	}
+	else if (intermediateBase % 2 != 0)  // Base must not be odd
+	{
+		intermediateBase++;
+	}
+
+	FIGURE_NAME = "TRIANGLE";
+
+	this->figureCOORDSet.insert(startPos);
+
+	COORD baseCOORD = startPos;
+	COORD tempCOORD = startPos;
+
+	for (size_t index = 1; index <= intermediateBase; index++)
+	{
+		baseCOORD.X++;
+		this->figureCOORDSet.insert(baseCOORD);
+
+		tempCOORD.X = baseCOORD.X;
+
+		if (index < (double)intermediateBase / 2 + 1)
+		{
+			tempCOORD.Y--;
+		}
+		else
+		{
+			tempCOORD.Y++;
+		}
+
+		this->figureCOORDSet.insert(tempCOORD);
+	}
+	figTypeEnum = TRIANGLE;
+}
 
 string Triangle::GetFigProperties() 
 {

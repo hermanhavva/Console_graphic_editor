@@ -47,7 +47,7 @@ public:
     int ExecuteCommand(const vector<string>&);
 
     static deque<shared_ptr<Figure>> GetAllFigsPtrInDrawOrder() ;
-    static string& GetConfigurationStr();
+    static string GetConfigurationStr();
     static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
     static bool IfDuplicate(shared_ptr<Figure>);
     static int DeleteThisFig(shared_ptr<Figure>);
@@ -63,8 +63,14 @@ private:
     const COORD MENU_POS;
     const WORD TEXT_COLOUR;
     const HANDLE hout;
-    int HandleAddFigure(vector<string>);
-    int HandleChangeColour();
+    
+    vector<string> GetUserCommand(string);
+    
+    int  HandleAddFigure(vector<string>);
+    void HandleSaveToFile(wstring) const;
+    void HandleLoadFromFile(wstring);
+    int  HandleChangeColour();
+    
     inline static shared_ptr<Figure> selectedFigurePtr = nullptr;
 
     vector<string> GetValidUserInputAndSetCurCommand();
@@ -72,11 +78,30 @@ private:
     string userInput = "";
     stringstream ssInput;
     COMMAND_TYPE curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
-//FIGURE_TYPE curFigure = FIGURE_TYPE::DEFAULT_TYPE;
     COORD figPosition{ 0,0 };
     WORD figColour = BLACK;
     unique_ptr<Polygon1> polygon;
 
+    class FileSaver
+    {
+    public:
+        FileSaver(const wstring& fileName);
+        ~FileSaver();
+        int SaveFiguresConfig(string) const;
+    private:
+        HANDLE fileHandle;
+    };
 
+    class FileLoader
+    {
+    public:
+        FileLoader(const wstring& fileName);
+        ~FileLoader();
+        vector<string> LoadFiguresConfig();
+    private:
+        HANDLE fileHandle;
+        unsigned int rowCounter = 1;
+        int const CHUNK_SIZE = 1024;
+    };
 };
 

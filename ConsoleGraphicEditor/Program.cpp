@@ -96,12 +96,19 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
         throw runtime_error("Unknown or not specified command");
     }
 
-    if ((curCommand == DRAW || curCommand == LIST || curCommand == SHAPES || curCommand == UNDO || curCommand == CLEAR) && (userCommandVector.size() != 1) )
+    if ((curCommand == DRAW  || 
+        curCommand == LIST   || 
+        curCommand == SHAPES || 
+        curCommand == UNDO   || 
+        curCommand == CLEAR)  && 
+        (userCommandVector.size() != 1))
     {
         curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
         throw runtime_error("Wrong arguments");
     }
-    else if ((curCommand == SAVE || curCommand == LOAD) && (userCommandVector.size() != 2))
+    else if ((curCommand == SAVE  || 
+              curCommand == LOAD) && 
+              (userCommandVector.size() != 2))
     {
         curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
         throw runtime_error("Wrong arguments");
@@ -141,8 +148,6 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
             index++;
         }
     }
-    
-    
 
     return userCommandVector;
 }
@@ -162,6 +167,22 @@ vector<string> Program::GetUserCommand() {
     }
     return validCommandVector;
 }
+
+vector<string> Program::GetUserCommand(string line) 
+{
+    ssInput = stringstream(line);
+    vector<string> validCommandVector;
+    try
+    {
+        validCommandVector = GetValidUserInputAndSetCurCommand();
+    }
+    catch (const std::exception& e)
+    {
+        throw e;
+    }
+    return validCommandVector;
+}
+
 
 int Program::ExecuteCommand(const vector<string>& commandVector) {
     string token;
@@ -214,9 +235,11 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
         break;
 
     case SAVE:
+        HandleSaveToFile(wstring(commandVector[1].begin(), commandVector[1].end()));
         break;
 
     case LOAD:
+        HandleLoadFromFile(wstring(commandVector[1].begin(), commandVector[1].end()));
         break;
 
     case DEFAULT_COMMAND:
@@ -234,28 +257,28 @@ deque <shared_ptr<Figure>> Program::GetAllFigsPtrInDrawOrder()
     return figDrawOrderDeque;
 }
 
-string& Program::GetConfigurationStr() 
+string Program::GetConfigurationStr() 
 {
     string result;
-    string type;
+    const string COMMAND = "add ";
     for (auto& curFigPtr : figDrawOrderDeque)
     {
-        string curID = to_string(curFigPtr->GetID());
+        result += COMMAND;
         if (dynamic_cast<Square*>(curFigPtr.get()))
         {
-            result += curID + "SQUARE";
+            result += "square";
         }
         else if (dynamic_cast<Triangle*>(curFigPtr.get()))
         {
-            result += curID + "TRIANGLE";
+            result += "triangle";
         }
         else if (dynamic_cast<Circle*>(curFigPtr.get()))
         {
-            result += curID + "CIRCLE";
+            result += "circle";
         }
         else
         {
-            result += curID + "RECTANGLE";
+            result += "rectangle";
         }
         result += curFigPtr->GetFigProperties() + '\n';
     }
@@ -384,16 +407,16 @@ int Program::HandleAddFigure(vector<string> commandVector)
     switch (curFigure)
     {
     case RECTANGLE:
-        figure = make_shared<Rectangle2>(Rectangle2(startPos, figMeasure1, figMeasure2, figColour));
+        figure = make_shared<Rectangle2>(startPos, figMeasure1, figMeasure2, figColour);
         break;
     case TRIANGLE:
-        figure = make_shared<Triangle>(Triangle(startPos, figMeasure1, figColour));
+        figure = make_shared<Triangle>(startPos, figMeasure1, figColour);
         break;
     case SQUARE:
-        figure = make_shared<Square>(Square(startPos, figMeasure1, figColour));
+        figure = make_shared<Square>(startPos, figMeasure1, figColour);
         break;
     case CIRCLE:
-        figure = make_shared<Circle>(Circle(startPos, figMeasure1, figColour));
+        figure = make_shared<Circle>(startPos, figMeasure1, figColour);
         break;
     }
     if (IfDuplicate(figure))
@@ -406,6 +429,143 @@ int Program::HandleAddFigure(vector<string> commandVector)
     idToFigurePtrMap[figure->GetID()] = figure;
     figDrawOrderDeque.push_back(move(figure));
 }
+
+void Program::HandleLoadFromFile(wstring fileName)
+{
+    figDrawOrderDeque.clear();
+    idToFigurePtrMap.clear();
+
+    auto fileLoader = make_unique<FileLoader>(fileName);
+    vector<string> lines = fileLoader->LoadFiguresConfig();
+    try
+    {
+        for (auto& line : lines)
+        {
+            ExecuteCommand(GetUserCommand(line));
+        }
+    }
+    catch (const exception& e)
+    {
+        throw runtime_error(format("Problem parsing the file: {}", e.what()));
+    }
+}
+
+void Program::HandleSaveToFile(wstring fileName) const
+{
+    auto fileSaver = make_unique<FileSaver>(fileName);  
+
+    if (figDrawOrderDeque.empty())
+    {
+        fileSaver->SaveFiguresConfig("empty");  
+    }
+    else
+    {
+        fileSaver->SaveFiguresConfig(GetConfigurationStr());
+    }
+}
+
+
+Program::FileSaver::FileSaver(const wstring& fileName)
+{
+    fileHandle = CreateFile(fileName.c_str(),
+        GENERIC_WRITE,
+        FILE_SHARE_READ,
+        NULL,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+    
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        throw runtime_error("Could not create the file\n");
+    }
+
+}
+int Program::FileSaver::SaveFiguresConfig(string config) const
+{
+    const char* buffer = config.c_str();
+    DWORD bytesWritten = 0;
+    DWORD bytesToWrite = static_cast<DWORD>(config.size());
+
+    BOOL result = WriteFile
+    (
+        this->fileHandle,
+        buffer,
+        bytesToWrite,
+        &bytesWritten,
+        NULL
+    );
+    
+    if (!result)
+    {
+        throw runtime_error("Error writing to the file");
+    }
+
+    return 0;
+}
+Program::FileSaver::~FileSaver()
+{
+    CloseHandle(fileHandle);
+    fileHandle = NULL;
+}
+
+Program::FileLoader::FileLoader(const wstring& fileName)
+{
+    fileHandle = CreateFile(fileName.c_str(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        throw runtime_error("Could not open the file");
+    }
+}
+Program::FileLoader::~FileLoader()
+{
+    CloseHandle(fileHandle);
+    fileHandle = NULL;
+}
+
+vector<string> Program::FileLoader::LoadFiguresConfig()
+{
+    unique_ptr<char[]> buffer(new char[CHUNK_SIZE]);
+    DWORD bytesRead;
+    string line;
+    vector<string> result;
+
+
+    while (ReadFile(fileHandle, buffer.get(), CHUNK_SIZE, &bytesRead, NULL) && bytesRead > 0) {  // error reading symbols
+
+        for (DWORD index = 0; index < bytesRead; ++index)
+        {
+            char ch = buffer[index];
+
+            if (ch == '\n')
+            {
+                rowCounter++;
+                result.push_back(line);
+
+                if (!line.empty())
+                {
+                    line.clear();
+                }
+            }
+            else if (line == "empty" && rowCounter == 1)
+            {
+                return result;
+            }
+            else if (ch != '\r') {
+                line += ch;
+            }
+        }
+    }
+    return result;
+}
+
 /*
 int Program::HandleChangeColour()
 {
