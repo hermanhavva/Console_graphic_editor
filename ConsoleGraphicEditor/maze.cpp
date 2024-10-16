@@ -3,7 +3,7 @@
 #include "maze.h"
 
 
-bool Polygon1::IsCoordInBounds(const COORD& inCoord) const
+bool Polygon1::IsCoordInBounds(const COORD& inCoord) const noexcept
 {
 	return (inCoord.X >= startLeftPoint.X + 2 &&
 			inCoord.X <= startLeftPoint.X + width - 2 &&
@@ -73,7 +73,7 @@ void Polygon1::PrintPolygon(HANDLE hout) const
 			
 	}
 }
-bool Polygon1::IsFigurePrintable(const COORD& startPos, const unordered_set<COORD, COORDHash, COORDEqual>& figereSetCoords) const
+bool Polygon1::IsFigurePrintable(const COORD& startPos, const unordered_set<COORD, COORDHash, COORDEqual>& figereSetCoords) const noexcept
 {
 	// if more than two dots(and startPos) are printable -> the figure is printable 
 	if (!(IsCoordInBounds(startPos)))

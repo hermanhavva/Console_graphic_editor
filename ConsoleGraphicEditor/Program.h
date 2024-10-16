@@ -69,19 +69,19 @@ private:
     const WORD TEXT_COLOUR;
     const HANDLE hout;
 
-    shared_ptr<Figure> selectedFigurePtr = nullptr;
+    static inline shared_ptr<Figure> selectedFigurePtr = nullptr;
     
     vector<string> GetUserCommand(string);
     void HandleAddFigure(vector<string>);
     void HandleDraw() const;
-    void HandleSaveToFile(wstring) const;
-    void HandleLoadFromFile(wstring);
-    void HandlePaint();
-    void HandleRemove();
+    void HandleSaveToFile(const wstring&) const;
+    void HandleLoadFromFile(const wstring&);
+    void HandlePaint(const short int&);
+    void HandleEdit(const vector<string>);
+    void HandleMove(const short int&, const short int&);
     void HandleSelectFigById(const unsigned int& id);
     void HandleRemove();
     
-    inline static shared_ptr<Figure> selectedFigurePtr = nullptr;
 
     vector<string> GetValidUserInputAndSetCurCommand();
     bool IsUnsignedDigit(string strToCheck);

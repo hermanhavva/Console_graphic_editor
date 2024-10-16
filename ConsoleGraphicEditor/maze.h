@@ -15,12 +15,12 @@ private:
 	const COORD startLeftPoint;
 	const string symbol = "\xB1\xB1";
 	const WORD defaultColour = BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY;
-	bool  IsCoordInBounds(const COORD& inCoord) const;
+	bool  IsCoordInBounds(const COORD& inCoord) const noexcept;
 
 public:
 	Polygon1(const size_t& width, const size_t& height, const COORD startLeftPoint);
 	void ClearPolygon(HANDLE hout) const;
 	void PrintPolygon(HANDLE hout) const;
 	void PrintFigure(const HANDLE& hout, const unordered_set<COORD, COORDHash, COORDEqual>& figCoordSet, const WORD& color) const;
-	bool IsFigurePrintable(const COORD& startPos, const unordered_set<COORD, COORDHash, COORDEqual>& figereSetCoords) const;
+	bool IsFigurePrintable(const COORD& startPos, const unordered_set<COORD, COORDHash, COORDEqual>& figereSetCoords) const noexcept;
 };

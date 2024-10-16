@@ -211,15 +211,13 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
         {
             throw runtime_error("Figure is not selected");
         }
-
-        switch (selectedFigurePtr->GetType())
+        if (!dynamic_cast<Square*>(selectedFigurePtr.get()) && dynamic_cast<Rectangle2*>(selectedFigurePtr.get()))
         {
-        case RECTANGLE:
             paramAmount = 2;
-            break;
-        default:
+        }
+        else 
+        {
             paramAmount = 1;
-            break;
         }
         if (userCommandVector.size() != paramAmount + 1)
         {
@@ -308,7 +306,6 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
 
     case CLEAR:
         polygon->ClearPolygon(hout);
-        
         break;
     case SELECT:
         HandleSelectFigById(stoi(commandVector[1]));
@@ -316,8 +313,15 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
     case REMOVE:
         HandleRemove();
         break;
+    case EDIT:
+        HandleEdit(commandVector);
+        break;
+    case MOVE:
+        HandleMove(stoi(commandVector[1]), stoi(commandVector[2]));
+        break;
     case PAINT:
-        HandlePaint();
+        HandlePaint(stoi(commandVector[1]));
+        break;
     case SAVE:
         HandleSaveToFile(wstring(commandVector[1].begin(), commandVector[1].end()));
         break;
@@ -328,9 +332,9 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
 
     case DEFAULT_COMMAND:
         throw runtime_error("Unknown command or command not specified\n");
-        return -1;
     }
     SetConsoleCursorPosition(hout, defaultPos);
+    curCommand = DEFAULT_COMMAND;
     
     return 0;
 }
@@ -482,11 +486,12 @@ void Program::HandleAddFigure(vector<string> commandVector)
     {
         throw runtime_error("The figure is duplicate");
     }
-    else if (!polygon->IsFigurePrintable(figure->GetThisFigStartPos(), figure->GetThisFigCoordsSet())) {
+    else if (!polygon->IsFigurePrintable(figure->GetThisFigStartPos(), figure->GetThisFigCOORDSet())) {
         throw runtime_error("Figure is not printable");
     }
     idToFigurePtrMap[figure->GetID()] = figure;
-    figDrawOrderDeque.push_back(move(figure));
+    figDrawOrderDeque.push_back(figure);
+    selectedFigurePtr = figure;
 }
 
 void Program::HandleDraw() const
@@ -495,7 +500,7 @@ void Program::HandleDraw() const
     polygon->ClearPolygon(hout);
     for (auto& curFigure : GetAllFigsPtrInDrawOrder())
     {
-        polygon->PrintFigure(hout, curFigure->GetThisFigCoordsSet(), curFigure->GetThisFigColour());
+        polygon->PrintFigure(hout, curFigure->GetThisFigCOORDSet(), curFigure->GetThisFigColour());
     }
     SetConsoleTextAttribute(hout, yellowFontBlackText);
 }
@@ -533,16 +538,75 @@ void Program::HandleRemove()
     selectedFigurePtr = nullptr;
 }
 
-void Program::HandlePaint()
+void Program::HandlePaint(const short int& colour)
 {
     if (selectedFigurePtr == nullptr)
     {
         throw runtime_error("Figure is not selected");
     }
-
+    selectedFigurePtr->SetColour(colour);
 }
 
-void Program::HandleLoadFromFile(wstring fileName)
+void Program::HandleEdit(const vector<string> commandVector)
+{
+    if (selectedFigurePtr == nullptr)
+    {
+        throw runtime_error("Figure not selected");
+    }
+
+    if (commandVector.size() == 3)
+    {
+        auto castedFigPtr = dynamic_cast<Rectangle2*>(selectedFigurePtr.get());
+        if (castedFigPtr == nullptr)
+        {
+            throw runtime_error("Wrong arguments");
+        }
+        castedFigPtr->SetWidthAndHeight(stoi(commandVector[1]), stoi(commandVector[2]));
+    }
+    else if (commandVector.size() == 2)
+    {
+        auto castedSquarePtr = dynamic_cast<Square*>(selectedFigurePtr.get());
+        if (castedSquarePtr)
+        {
+            castedSquarePtr->SetWidthAndHeight(stoi(commandVector[1]), stoi(commandVector[2]));
+        }
+        auto castedTrianglePtr = dynamic_cast<Triangle*>(selectedFigurePtr.get());
+        if (castedTrianglePtr)
+        {
+            castedTrianglePtr->SetBase(stoi(commandVector[1]));
+        }
+        auto castedCirclePtr = dynamic_cast<Circle*>(selectedFigurePtr.get());
+        if (castedCirclePtr)
+        {
+            castedCirclePtr->SetRadius(stoi(commandVector[1]));
+        }
+    }
+    else 
+    {
+        throw runtime_error("Wrong argumnets");
+    }
+}
+
+void Program::HandleMove(const short int& Xpos, const short int& Ypos)
+{
+    if (selectedFigurePtr == nullptr)
+    {
+        throw runtime_error("Figure is not selected");
+    }
+    COORD oldStartPos = selectedFigurePtr->GetThisFigStartPos();
+    COORD newStartPos{Xpos, Ypos};
+
+    selectedFigurePtr->SetStartPos(newStartPos);
+    if(!polygon->IsFigurePrintable(newStartPos, selectedFigurePtr->GetThisFigCOORDSet()))
+    {
+        selectedFigurePtr->SetStartPos(oldStartPos);
+        throw runtime_error("Figure is not printable");
+    }
+    
+}
+
+
+void Program::HandleLoadFromFile(const wstring& fileName)
 {
     figDrawOrderDeque.clear();
     idToFigurePtrMap.clear();
@@ -562,7 +626,7 @@ void Program::HandleLoadFromFile(wstring fileName)
     }
 }
 
-void Program::HandleSaveToFile(wstring fileName) const
+void Program::HandleSaveToFile(const wstring& fileName) const
 {
     auto fileSaver = make_unique<FileSaver>(fileName);  
 
@@ -678,31 +742,6 @@ vector<string> Program::FileLoader::LoadFiguresConfig()
     return result;
 }
 
-/*
-int Program::HandleChangeColour()
-{
-    string token;
-    unsigned short paramCounter = 0;
-    const unsigned short paramAmount = 1;
-    while(ssInput >> token)
-    {
-        ssInput >> token;
-        paramCounter++;
-    }
-    
-    if (!IsUnsignedDigit(token) || stoi(token) >  || paramCounter > paramAmount || paramCounter == 0)
-    {
-        throw runtime_error("Wrong arguments");
-    }
-    if (selectedFigurePtr == nullptr)
-    {
-        throw runtime_error("Select the figure first");
-    }
-    
- //   selectedFigurePtr->SetColour(colourEnumToWordMap[token]);
-
-}
-*/
 
 bool Program::IsUnsignedDigit(string strToCheck) {
     return all_of(strToCheck.begin(), strToCheck.end(), ::isdigit);

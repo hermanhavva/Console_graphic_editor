@@ -28,7 +28,7 @@ int main()
 			program->PrintMainMenu();
 			auto commandVector = program->GetUserCommand();
 			
-			if (program->ExecuteCommand(commandVector) == 0)
+			if (program->ExecuteCommand(commandVector) == 0) 
 			{
 				cout << ">>success\t\t*Press any key to proceed*";
  				_getch();
