@@ -132,7 +132,7 @@
     <ClCompile Include="colours.cpp" />
     <ClCompile Include="COORD_logic.cpp" />
     <ClCompile Include="Figure.cpp" />
-    <ClCompile Include="maze.cpp">
+    <ClCompile Include="polygon.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -145,7 +145,7 @@
     <ClInclude Include="colours.h" />
     <ClInclude Include="COORD_logic.h" />
     <ClInclude Include="Figure.h" />
-    <ClInclude Include="maze.h" />
+    <ClInclude Include="polygon.h" />
     <ClInclude Include="Program.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

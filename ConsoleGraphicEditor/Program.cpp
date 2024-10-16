@@ -4,17 +4,17 @@ Program::Program(const HANDLE& hout,
     const COORD& polygonPos,
     const size_t& width,
     const size_t& height,
-    const COORD& menuPos,
+    const COORD& promtPos,
     const WORD& textColour)
     : hout(hout),
-    MENU_POS(menuPos), 
-    TEXT_COLOUR(textColour) 
+      PROMT_POS(promtPos),
+      TEXT_COLOUR(textColour) 
 {
-
+    
     polygon = make_unique<Polygon1>(width, height, polygonPos);
 }
 
-void Program::ClearMainMenu() const
+void Program::ClearPromtMenu() const
 {
     SetConsoleTextAttribute(hout, yellowFontBlackText);
 
@@ -23,8 +23,8 @@ void Program::ClearMainMenu() const
 
     int consoleWidth = consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 2;
     
-    COORD curCOORD = MENU_POS;
-    for (; curCOORD.Y <= 31; curCOORD.Y++)
+    COORD curCOORD = PROMT_POS;
+    for (; curCOORD.Y <= 29; curCOORD.Y++)
     {
         SetConsoleCursorPosition(hout, curCOORD);
         for (; curCOORD.X < consoleWidth; curCOORD.X++)
@@ -33,10 +33,11 @@ void Program::ClearMainMenu() const
         }
         curCOORD.X = 0;
     }
-    SetConsoleCursorPosition(hout, MENU_POS);
+    //SetConsoleCursorPosition(hout, MENU_POS);
 }
 
-void Program::PrintMainMenu() const {
+void Program::PrintMainMenu() const noexcept
+{
     SetConsoleTextAttribute(hout, TEXT_COLOUR);
     SetConsoleCursorPosition(hout, MENU_POS);
     cout << MAIN_MENU_STR;
@@ -109,17 +110,22 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
     else if (commandStr == "load") {
         curCommand = LOAD;
     }
+    else if (commandStr == "help")
+    {
+        curCommand = PRINT_MENU;
+    }
     else {
         curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
         throw runtime_error("Unknown or not specified command");
     }
 
-    if ((curCommand == DRAW  || 
-        curCommand == LIST   || 
-        curCommand == SHAPES || 
-        curCommand == UNDO   || 
-        curCommand == CLEAR  || 
-        curCommand == REMOVE) && 
+    if ((curCommand == DRAW      || 
+        curCommand == LIST       || 
+        curCommand == SHAPES     || 
+        curCommand == UNDO       || 
+        curCommand == CLEAR      || 
+        curCommand == PRINT_MENU ||
+        curCommand == REMOVE)    && 
         (userCommandVector.size() != 1))
     {
         curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
@@ -236,7 +242,7 @@ vector<string> Program::GetValidUserInputAndSetCurCommand()
 }
 
 vector<string> Program::GetUserCommand() {
-    cout << ">>";
+    cout << "\nEnter your command, pleare\n>>";
     getline(cin, userInput);
     ssInput = stringstream(userInput); 
     vector<string> validCommandVector;
@@ -290,7 +296,7 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
         _getch();
         system("cls");
         polygon->PrintPolygon(hout);
-        this->PrintMainMenu();
+        HandleDraw();
         break;
 
     case SHAPES:
@@ -322,10 +328,12 @@ int Program::ExecuteCommand(const vector<string>& commandVector) {
     case PAINT:
         HandlePaint(stoi(commandVector[1]));
         break;
+    case PRINT_MENU:
+        HandlePrintMenu();
+        break;
     case SAVE:
         HandleSaveToFile(wstring(commandVector[1].begin(), commandVector[1].end()));
         break;
-
     case LOAD:
         HandleLoadFromFile(wstring(commandVector[1].begin(), commandVector[1].end()));
         break;
@@ -605,6 +613,19 @@ void Program::HandleMove(const short int& Xpos, const short int& Ypos)
     
 }
 
+void Program::HandlePrintMenu() const noexcept
+{
+    SetConsoleTextAttribute(hout, yellowFontBlackText);
+    system("cls");
+
+    PrintMainMenu();
+    cout << "\n\t*Press any key to return to main menu* ";
+    _getch();
+    system("cls");
+    polygon->PrintPolygon(hout);
+
+    HandleDraw();
+}
 
 void Program::HandleLoadFromFile(const wstring& fileName)
 {

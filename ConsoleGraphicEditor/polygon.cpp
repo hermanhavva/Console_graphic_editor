@@ -1,6 +1,6 @@
 #pragma once
 
-#include "maze.h"
+#include "polygon.h"
 
 
 bool Polygon1::IsCoordInBounds(const COORD& inCoord) const noexcept

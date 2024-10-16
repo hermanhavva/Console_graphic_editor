@@ -11,7 +11,7 @@
 #include <deque> 
 #include "Figure.h"
 #include "colours.h"
-#include "maze.h"
+#include "polygon.h"
 #include "COORD_logic.h"
 
 
@@ -32,7 +32,8 @@ enum COMMAND_TYPE
     EDIT    = 11,
     SAVE    = 12,
     LOAD    = 13,
-    DEFAULT_COMMAND = 14
+    PRINT_MENU = 14,
+    DEFAULT_COMMAND = 15
 };
 
 class Program
@@ -42,11 +43,11 @@ public:
         const COORD& polygonPos,
         const size_t& width,
         const size_t& height,
-        const COORD& menuPos,
+        const COORD& promptPos,
         const WORD& textColour);
 
-    void ClearMainMenu() const;
-    void PrintMainMenu() const;
+    void ClearPromtMenu() const;
+    void PrintMainMenu() const noexcept;
     void PrintPolygon() const;
     vector<string> GetUserCommand();
     int ExecuteCommand(const vector<string>&);
@@ -64,8 +65,9 @@ public:
 
 private:
     const string MAIN_MENU_STR = "List of commands:\tdraw\t\tlist\t\tshapes\t\t  add  | <shape> <COORD.X> <COORD.Y> <property>\n"
-        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\nEnter your command, please:\n";
-    const COORD MENU_POS;
+        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\n";
+    const COORD MENU_POS{ 0, 1 };
+    const COORD PROMT_POS{ 0, 0 };
     const WORD TEXT_COLOUR;
     const HANDLE hout;
 
@@ -81,7 +83,7 @@ private:
     void HandleMove(const short int&, const short int&);
     void HandleSelectFigById(const unsigned int& id);
     void HandleRemove();
-    
+    void HandlePrintMenu() const noexcept;
 
     vector<string> GetValidUserInputAndSetCurCommand();
     bool IsUnsignedDigit(string strToCheck);
