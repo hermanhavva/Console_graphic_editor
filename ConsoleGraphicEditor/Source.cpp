@@ -17,32 +17,30 @@ int main()
 	
 	startPos.X = 15;
 	startPos.Y = 10;
-	COORD menuPos{ 0, 23 };
+	COORD promtPos{ 0, 23 };
 	COORD polygonPos{10,1};
-	unique_ptr<Program> program = make_unique<Program>(Program(hout, polygonPos, 80, 20, menuPos, yellowFontBlackText));
-	unique_ptr<Figure> startFigure = make_unique<Rectangle2>(Rectangle2(startPos, 0,0, yellowFontBlackText));
+	unique_ptr<Program> program = make_unique<Program>(hout, polygonPos, 80, 20, promtPos, yellowFontBlackText);
 	while (true) 
 	{
 		try  
 		{
 			program->PrintPolygon();
-			program->PrintMainMenu();
 			auto commandVector = program->GetUserCommand();
 			
 			if (program->ExecuteCommand(commandVector) == 0)
 			{
+				program->ClearPromtMenu();
+				SetConsoleCursorPosition(hout, promtPos);
 				cout << ">>success\t\t*Press any key to proceed*";
- 				_getch();
-			} 
-			
-			program->ClearMainMenu();
-
+				_getch();
+				program->ClearPromtMenu();
+			}
 		}
 		catch (const std::exception& e)
 		{
 			cout << e.what() << "\tPress any key to proceed";
 			_getch();
-			program->ClearMainMenu();
+			program->ClearPromtMenu();
 		}	
 
 	}

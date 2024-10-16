@@ -18,9 +18,9 @@ enum FIGURE_TYPE
 class Figure abstract
 {
 public:
-    Figure(const COORD& startPos, const WORD& colour);
+    Figure(const COORD& startPos, const int& colour);
+    
     virtual ~Figure() = default;
-
     virtual string GetFigProperties() = 0;
     virtual bool IsEqual(shared_ptr<Figure> other) const = 0;
 
@@ -29,14 +29,17 @@ public:
     string GetFigNameStr() const;
     COORD GetThisFigStartPos() const;
 
-    FIGURE_TYPE GetType() const;
+    //FIGURE_TYPE GetType() const;
     WORD GetThisFigColour() const;
-
   
-    unordered_set<COORD, COORDHash, COORDEqual> GetThisFigCoordsSet() const;
+    unordered_set<COORD, COORDHash, COORDEqual> GetThisFigCOORDSet() const;
+
+    void SetColour(const int&);
+    void SetStartPos(const COORD&);
 
 protected:
-    FIGURE_TYPE figTypeEnum;
+    virtual void GenerateSetOfCOORD() = 0;
+   // FIGURE_TYPE figTypeEnum;
     COORD startPos;
     string FIGURE_NAME;
     WORD colour;
@@ -46,32 +49,32 @@ protected:
     unsigned int id = 0;
 
     inline static unsigned int count = 0;
-
-
-    
 };
 
 // Rectangle class derived from Figure
 class Rectangle2 : public Figure
 {
 public:
-    Rectangle2(const COORD& startPos, const short& width, const short& height, const WORD& colour);
+    Rectangle2(const COORD& startPos, const short& width, const short& height, const int& colour);
+    void SetWidthAndHeight(const size_t&, const size_t&);
+    
+    size_t GetWidth() const;
+    size_t GetHeight() const;
     string GetFigProperties() override;
 
     bool IsEqual (shared_ptr<Figure> other) const override;
 
 protected:
-    size_t GetWidth() const;
-    size_t GetHeight() const;
-    const size_t width = 0;
-    const size_t height = 0;
+    void GenerateSetOfCOORD() override;
+    size_t width = 0;
+    size_t height = 0;
 };
 
 // Square class derived from Rectangle
 class Square : public Rectangle2
 {
 public:
-    Square(const COORD& startPos, const short& side, const WORD& colour);
+    Square(const COORD& startPos, const short& side, const int& colour);
     string GetFigProperties() override;
 };
 
@@ -79,12 +82,15 @@ public:
 class Triangle : public Figure
 {
 public:
-    Triangle(const COORD& startPos, const short& base, const WORD& colour);
+    Triangle(const COORD& startPos, const size_t& base, const int& colour);
     string GetFigProperties() override;
-
     bool IsEqual(shared_ptr<Figure> other) const override;
+    size_t GetBase() const;
+    void SetBase(const size_t&);
+
 
 private:
+    void GenerateSetOfCOORD() override;
     const SHORT TRIANGLE_MIN_SIZE_OFFSET = 4;
     const SHORT TRIANGLE_MIN_BASE = 2;
     size_t base;
@@ -94,12 +100,16 @@ private:
 class Circle : public Figure
 {
 public:
-    Circle(const COORD& startPos, const short& radius, const WORD& colour);
+    Circle(const COORD& startPos, const size_t& radius, const int& colour);
     string GetFigProperties() override;
+    size_t GetRadius() const;
+    void SetRadius(const size_t&);
+
 
     bool IsEqual(shared_ptr<Figure> other) const override;
 
 private:
+    void GenerateSetOfCOORD() override;
     size_t radius;
 };
 

@@ -11,7 +11,7 @@
 #include <deque> 
 #include "Figure.h"
 #include "colours.h"
-#include "maze.h"
+#include "polygon.h"
 #include "COORD_logic.h"
 
 
@@ -19,15 +19,21 @@ using namespace std;
 
 enum COMMAND_TYPE
 {
-    DRAW = 1,
-    LIST = 2,
-    SHAPES = 3,
-    ADD = 4,
-    UNDO = 5,
-    CLEAR = 6,
-    SAVE = 7,
-    LOAD = 8,
-    DEFAULT_COMMAND = 9
+    DRAW    = 1,
+    LIST    = 2,
+    SHAPES  = 3,
+    ADD     = 4,
+    UNDO    = 5,
+    CLEAR   = 6,
+    SELECT  = 7,
+    PAINT   = 8,
+    MOVE    = 9,
+    REMOVE  = 10,
+    EDIT    = 11,
+    SAVE    = 12,
+    LOAD    = 13,
+    PRINT_MENU = 14,
+    DEFAULT_COMMAND = 15
 };
 
 class Program
@@ -37,21 +43,21 @@ public:
         const COORD& polygonPos,
         const size_t& width,
         const size_t& height,
-        const COORD& menuPos,
+        const COORD& promptPos,
         const WORD& textColour);
 
-    void ClearMainMenu() const;
-    void PrintMainMenu() const;
+    void ClearPromtMenu() const;
+    void PrintMainMenu() const noexcept;
     void PrintPolygon() const;
     vector<string> GetUserCommand();
     int ExecuteCommand(const vector<string>&);
 
     static deque<shared_ptr<Figure>> GetAllFigsPtrInDrawOrder() ;
-    static string& GetConfigurationStr();
+    static string GetConfigurationStr();
     static bool AreSetsEqual(const unordered_set<COORD, COORDHash, COORDEqual> inSet1, const unordered_set<COORD, COORDHash, COORDEqual> inSet2);
     static bool IfDuplicate(shared_ptr<Figure>);
     static int DeleteThisFig(shared_ptr<Figure>);
-    static int SelectFigById(const unsigned int& id);
+    
 
     inline static deque<shared_ptr<Figure>> figDrawOrderDeque;
     inline static unordered_map<size_t, shared_ptr<Figure>> idToFigurePtrMap;
@@ -59,24 +65,55 @@ public:
 
 private:
     const string MAIN_MENU_STR = "List of commands:\tdraw\t\tlist\t\tshapes\t\t  add  | <shape> <COORD.X> <COORD.Y> <property>\n"
-        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\nEnter your command, please:\n";
-    const COORD MENU_POS;
+        "\t\t\tundo\t\tclear\t\tsave | <filename> load | <filename>\n";
+    const COORD MENU_POS{ 0, 1 };
+    const COORD PROMT_POS{ 0, 0 };
     const WORD TEXT_COLOUR;
     const HANDLE hout;
-    int HandleAddFigure(vector<string>);
-    int HandleChangeColour();
-    inline static shared_ptr<Figure> selectedFigurePtr = nullptr;
+
+    static inline shared_ptr<Figure> selectedFigurePtr = nullptr;
+    
+    vector<string> GetUserCommand(string);
+    void HandleAddFigure(vector<string>);
+    void HandleDraw() const;
+    void HandleSaveToFile(const wstring&) const;
+    void HandleLoadFromFile(const wstring&);
+    void HandlePaint(const short int&);
+    void HandleEdit(const vector<string>);
+    void HandleMove(const short int&, const short int&);
+    void HandleSelectFigById(const unsigned int& id);
+    void HandleRemove();
+    void HandlePrintMenu() const noexcept;
 
     vector<string> GetValidUserInputAndSetCurCommand();
     bool IsUnsignedDigit(string strToCheck);
     string userInput = "";
     stringstream ssInput;
     COMMAND_TYPE curCommand = COMMAND_TYPE::DEFAULT_COMMAND;
-//FIGURE_TYPE curFigure = FIGURE_TYPE::DEFAULT_TYPE;
     COORD figPosition{ 0,0 };
     WORD figColour = BLACK;
     unique_ptr<Polygon1> polygon;
 
+    class FileSaver
+    {
+    public:
+        FileSaver(const wstring& fileName);
+        ~FileSaver();
+        int SaveFiguresConfig(string) const;
+    private:
+        HANDLE fileHandle;
+    };
 
+    class FileLoader
+    {
+    public:
+        FileLoader(const wstring& fileName);
+        ~FileLoader();
+        vector<string> LoadFiguresConfig();
+    private:
+        HANDLE fileHandle;
+        unsigned int rowCounter = 1;
+        int const CHUNK_SIZE = 1024;
+    };
 };
 
